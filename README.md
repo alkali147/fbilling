@@ -36,4 +36,4 @@ exten => _X.,n,AGI(fbilling.agi,${FBILLINGUSER})
 exten => _X.,n,Hangup
 ```
 * Add custom trunk to route extensions' calls to FBilling;
-* Condigure FBilling.
+* Configure FBilling.
