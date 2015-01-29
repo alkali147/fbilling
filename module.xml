@@ -1,0 +1,25 @@
+<module>
+    <rawname>fbilling</rawname>
+    <repo>standard</repo>
+    <type>setup</type>
+    <category>Applications</category>
+    <name>FBilling</name>
+    <version>0.9.5</version>
+    <publisher>Roman Khomasuridze</publisher>
+    <candisable>yes</candisable>
+    <canuninstall>yes</canuninstall>
+    <changelog>
+        *0.9.5*     - cleanup
+        *0.9.4*     - fixed #103, #102, #105, #106
+        *0.9.3*     - rewritten extension handling, now includes alias edit functionality and tenant/permission validation
+        *0.9.2*     - revamped install/uninstall scripts
+        *0.9.1*     - initial release candidate
+    </changelog>
+    <menuitems>
+        <fbilling_reports needsenginedb="yes" category="Reports">FBilling Reports</fbilling_reports>
+        <fbilling_admin needsenginedb="yes" category="Admin">FBilling Administration</fbilling_admin>
+    </menuitems>
+    <supported>
+        <version>2.11</version>
+    </supported>
+</module>

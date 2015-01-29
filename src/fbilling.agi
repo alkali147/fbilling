@@ -1,0 +1,633 @@
+#!/usr/bin/env perl
+
+# Copyright (c) 2014-2015, Roman Khomasuridze, <khomasuridze@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer. 
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# This script is part of FBilling, 
+# fbilling.agi - Responsible for handling backend logic
+
+
+### CHANGELOG ############################################################################
+# 15v1.21-2  - code cleanup
+### END CHANGELOG #########################################################################
+
+
+### TODO ##################################################################################
+### END TODO ##############################################################################
+
+
+use strict;
+use warnings;
+use DBI;
+use Asterisk::AGI;
+use Config::Tiny;
+use Switch;
+use lib '/var/lib/asterisk/agi-bin/fbilling-libs';
+use Account;
+use Destination;
+use Call;
+use Util;
+use CDR;
+
+
+## load data from configuration file
+my $main_conf = Config::Tiny->new;
+$main_conf = Config::Tiny->read('/etc/asterisk/fbilling.conf');
+my $db_host = $main_conf->{database}->{host};
+my $db_user = $main_conf->{database}->{username};
+my $db_pass = $main_conf->{database}->{password};
+my $db_name = $main_conf->{database}->{database};
+my $log_level = $main_conf->{general}->{log_level};
+my $logfile = $main_conf->{general}->{log_location};
+$SIG{HUP} = "IGNORE";
+
+
+my $agi = Asterisk::AGI->new;
+my $dbh = DBI->connect("dbi:mysql:$db_name:$db_host","$db_user","$db_pass");
+if (!$dbh) {
+    Util::log("ERROR","NONE","Can not connect to database. Exitting...");
+    $agi->hangup;
+    exit 0;
+}
+
+
+## start variable declaration
+my $current_date = `date +%Y"-"%m"-"%d" "%H":"%M":"%S | tr -d '\n'`;
+our $VERSION = "0.9.1";
+my %agi_input = $agi->ReadParse();
+my $did = $agi->get_variable('EXTEN');
+# if outbound caller id is set in extension or trunks configuration, we can't catch correct extension number via agi_input{'callerid'}, 
+# so we must pass it as an argument in dialplan, otherwise we can use agi_input{'callerid'}
+#my $cid = $agi_input{"callerid"};
+my $cid = $ARGV[0];
+my $uniqueid = $agi_input{"uniqueid"};
+my $account;
+my $account_exists = 0;
+my %account_details;
+my $destination;
+my $destination_number;
+my %prefix;
+my %tariff;
+my %trunk;
+my $call;
+my @max_duration;
+my $billsec = 0;
+my $disposition;
+my $call_cost;
+my $full_call_cost;                         # TODO merge this two?
+my $dialstring;
+my $cdr;
+## end variable declaration
+
+
+###
+### MAIN FLOW
+#$agi->setcallback(&dohungup);
+
+
+$agi->verbose("==================================================================");
+$agi->verbose("==================================================================");
+$agi->verbose("FBILLING version $VERSION, executing with debug level $log_level");
+switch ($log_level) {
+    case 0 {
+        $agi->verbose("Executing FBILING without logging");
+    }
+    case 1 {
+        $agi->verbose("Only logging to console");
+    }
+    case 2 {
+        $agi->verbose("Only logging to $logfile");
+    }
+    case 3 {
+        $agi->verbose("Logging to both, console and $logfile");
+        Util::log("NOTICE",$uniqueid,"Logging to both console and $logfile");
+    }
+    else {
+        $agi->verbose("log_level value $log_level is invalid, please correct fbilling.conf and set log_level to 0, 1, 2 or 3. Exitting...");
+        Util::log("ERROR",$uniqueid,"log_level value $log_level is invalid, please correct fbilling.conf and set log_level to 0, 1, 2 or 3. Exitting...");
+        $agi->hangup;
+        exit 0;
+    }
+}
+
+
+# check absolutely neccessary variables
+if (!$did) {
+    Util::log("ERROR",$uniqueid,"Unknown DID or wrong destination number, DID: $did. Exitting...");
+    $agi->hangup;
+    exit 0;
+}
+if (!$cid) {
+    Util::log("ERROR",$uniqueid,"Unknown caller ID or wrong source number, CID: $cid. Exitting...");
+    $agi->hangup;
+    exit 0;
+}
+if (!$uniqueid) {
+    Util::log("ERROR","NONE","Unknown Unique ID, uniqueid: $uniqueid. Exitting...");
+    $agi->hangup;
+    exit 0;
+}
+
+
+Util::log("NOTICE",$uniqueid,"DID number is: $did");
+Util::log("NOTICE",$uniqueid,"Caller ID number is: $cid");
+Util::log("NOTICE",$uniqueid,"Unique ID is: $uniqueid");
+
+
+$account = Account->new("$cid");
+$destination = Destination->new("$did");
+$cdr = CDR->new("$uniqueid");
+
+
+# check if account exists
+Util::log("NOTICE",$uniqueid,"Checking if account exists...");
+$account_exists = $account->check_if_exists($uniqueid);
+if ($account_exists == 0 or !$account_exists) {
+    Util::log("ERROR",$uniqueid,"Account does not exist. Exitting...");
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Account exists, proceeding...");
+}
+
+
+# get account details
+Util::log("NOTICE",$uniqueid,"Getting account information...");
+%account_details = $account->get_details($uniqueid);
+Util::log("NOTICE",$uniqueid,"Account outbound number is: $account_details{'account_outbound_num'}");       # maybe obsolete
+Util::log("NOTICE",$uniqueid,"Account credit is: $account_details{'account_credit'}");
+Util::log("NOTICE",$uniqueid,"Account permission ID is: $account_details{'account_permission_id'}");
+Util::log("NOTICE",$uniqueid,"Account permission name is: $account_details{'account_permission_name'}");
+Util::log("NOTICE",$uniqueid,"Account tenant ID is: $account_details{'tenant_id'}");
+Util::log("NOTICE",$uniqueid,"Account tenant name is: $account_details{'tenant_name'}");
+Util::log("NOTICE",$uniqueid,"Account tenant is active: $account_details{'tenant_is_active'}");
+Util::log("NOTICE",$uniqueid,"Account uses limit: $account_details{'account_use_limit'}");
+Util::log("NOTICE",$uniqueid,"Account server ID is: $account_details{'account_server_id'}");                # for future implementation
+
+
+# check if account is assigned to tenant
+Util::log("NOTICE",$uniqueid,"Checking if account is assigned to tenant...");
+if ($account_details{'tenant_id'} == 0 or $account_details{'tenant_id'} == '') {
+    Util::log("ERROR",$uniqueid,"Account is not assigned to any tenant. Exitting...");
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("ERROR",$uniqueid,"Account is assigned to tenant, proceeding...");
+}
+
+
+# check if tenant is active
+if ($account_details{'tenant_is_active'} == 1) {
+    Util::log("NOTICE",$uniqueid,"This tenant is active, proceeding...");
+} else {
+    Util::log("ERROR",$uniqueid,"This tenant is not active. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        0,                                      # prefix_id
+        0,                                      # country
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        9,                                      # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+}
+
+
+# check if account has credit to call
+if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, check if account has sufficient credit
+    Util::log("NOTICE",$uniqueid,"There is limit set on this account, proceeding...");
+    if ($account_details{'account_credit'} <= 0) {
+        Util::log("ERROR",$uniqueid,"Account has no sufficient credit. Exitting...");
+        $cdr->insert(
+            $did,                                   # src
+            $cid,                                   # dst
+            $current_date,                          # calldate
+            0,                                      # billsec
+            0,                                      # prefix_id
+            0,                                      # country
+            0,                                      # tariff_id
+            0,                                      # tariff_cost
+            0,                                      # tariff_initial_cost
+            0,                                      # total cost
+            $account_details{'tenant_id'},          # tenant_id
+            $uniqueid,                              # uniqueid
+            2,                                      # cause_id
+            $account_details{'account_server_id'}   # server_id
+        );
+        $agi->hangup;
+        exit 0;
+    } else {
+        Util::log("NOTICE",$uniqueid,"Account has sufficient credit: $account_details{'account_credit'}, proceeding...");
+    }
+} else {
+    Util::log("NOTICE",$uniqueid,"There is no limit set on this account, proceeding...");
+}
+
+
+# check prefix
+Util::log("NOTICE",$uniqueid,"Getting prfix information...");
+%prefix = $destination->get_prefix($uniqueid);
+if ($prefix{'prefix_id'} == 0) {
+    Util::log("ERROR",$uniqueid,"Prefix does not exist. Exitting...");
+    ##TODO maybe set hangup_cause globally?
+    ## TODO insert failed cdr here
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        0,                                      # prefix_id
+        0,                                      # country
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        3,                                      # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Prefix found for DID $did, proceeding...");
+}
+
+
+Util::log("NOTICE",$uniqueid,"Prefix ID is: $prefix{'prefix_id'}");
+Util::log("NOTICE",$uniqueid,"Prefix is: $prefix{'prefix'}");
+Util::log("NOTICE",$uniqueid,"Prefix country is: $prefix{'country'}");
+Util::log("NOTICE",$uniqueid,"Prefix weight ID is: $prefix{'weight_id'}");
+Util::log("NOTICE",$uniqueid,"Prefix is active: $prefix{'is_active'}");
+
+
+# check if prefix is active
+if ($prefix{"is_active"} == 0) {
+    Util::log("ERROR",$uniqueid,"Prefix is not active. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        0,                                      # prefix_id
+        0,                                      # country
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        10,                                     # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Prefix is active, proceeding...");
+}
+
+
+# check if tariff for specified prefix exists for this tenant
+Util::log("NOTICE",$uniqueid,"Getting tariff information...");
+%tariff = $destination->get_tariff($account_details{'tenant_id'},$prefix{'prefix_id'},$uniqueid);
+if ($tariff{"tariff_id"} == 0) {
+    Util::log("ERROR",$uniqueid,"Tariff does not exist. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'country'},                     # country 
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        4,                                      # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Tariff found for Prefix $prefix{'prefix'}, proceeding...");
+}
+
+
+Util::log("NOTICE",$uniqueid,"Tariff ID is: $tariff{'tariff_id'}");
+Util::log("NOTICE",$uniqueid,"Tariff prefix ID is: $tariff{'tariff_prefix_id'}");
+Util::log("NOTICE",$uniqueid,"Tariff cost is: $tariff{'tariff_cost'}");
+Util::log("NOTICE",$uniqueid,"Tariff initial cost is: $tariff{'tariff_initial_cost'}");
+Util::log("NOTICE",$uniqueid,"Tariff tenant ID is: $tariff{'tariff_tenant_id'}");
+Util::log("NOTICE",$uniqueid,"Tariff trunk ID is: $tariff{'tariff_trunk_id'}");
+
+
+$call = Call->new(
+    "$cid",
+    "$did",
+    "$account_details{'account_credit'}",
+    "$account_details{'tenant_id'}",
+    "$account_details{'account_permission_id'}",
+    "$prefix{'prefix_id'}",
+    "$prefix{'prefix'}",
+    "$prefix{'country'}",
+    "$prefix{'weight_id'}",
+    "$tariff{'tariff_cost'}"
+);
+
+
+# check if permission exists
+Util::log("NOTICE",$uniqueid,"Getting permission information...");
+my %permission_details = $call->get_permission_details($uniqueid);
+if ($permission_details{'permission_id'} == 0) {
+    Util::log("ERROR",$uniqueid,"Permission does not exist, or is not set up correctly. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'country'},                     # country
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        11,                                     # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Permission found for this call, proceeding...");
+}
+
+
+Util::log("NOTICE",$uniqueid,"Permission ID is: $permission_details{'permission_id'}");
+Util::log("NOTICE",$uniqueid,"Permission name is: $permission_details{'permission_name'}");
+Util::log("NOTICE",$uniqueid,"Permission is active: $permission_details{'permission_is_active'}");
+
+
+# check if permission is active
+if ($permission_details{'permission_is_active'} == 0) {
+    Util::log("ERROR",$uniqueid,"Permission is not active. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'country'},                     # country
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        12,                                     # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Permission is active, proceeding...");
+}
+
+
+# check if account has permission to call specified prefix
+my $permission_ok = $call->get_permission($uniqueid);
+Util::log("NOTICE",$uniqueid,"Permission for this call is: $permission_ok");
+if ($permission_ok == 0) {
+    Util::log("ERROR",$uniqueid,"Account has no permission to call this prefix. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'country'},                     # country
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        5,                                      # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Account has permission to call this prefix, proceeding...");
+}
+
+
+Util::log("NOTICE",$uniqueid,"==================================================================");
+Util::log("NOTICE",$uniqueid,"CALL INITIALISATION PHASE ========================================");
+
+
+# check if maximum duratiion of this call is more than a minute
+@max_duration = $call->max_duration($uniqueid);
+Util::log("NOTICE",$uniqueid,"Maximum duration for this call is: $max_duration[0]");
+if ($max_duration[0] < 60) {
+    Util::log("ERROR",$uniqueid,"Minimum duration of call is less than 60 seconds. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'country'},                     # country
+        $tariff{'tariff_id'},                   # tariff_id
+        $tariff{'tariff_cost'},                 # tariff_cost
+        $tariff{'tariff_initial_cost'},         # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        6,                                      # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Minimum duration of call is more than 60 seconds, proceeding...");
+}
+
+
+# check if initial cost for tariff is less than account credit
+if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'} > $account_details{'account_credit'}) {
+    Util::log("ERROR",$uniqueid,"Initial cost of this tariff is more than account credit. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'country'},                     # country
+        $tariff{'tariff_id'},                   # tariff_id
+        $tariff{'tariff_cost'},                 # tariff_cost
+        $tariff{'tariff_initial_cost'},         # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        8,                                      # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("NOTICE",$uniqueid,"Initial cost of this tariff is less than account credit, proceeding...");
+}
+
+
+# get trunk information
+Util::log("NOTICE",$uniqueid,"Getting trunk information...");
+%trunk = $destination->get_trunk($tariff{'tariff_id'},$uniqueid);       # TODO do we need this?
+if ($trunk{"trunk_id"} == 0) {
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'country'},                     # country
+        $tariff{'tariff_id'},                   # tariff_id
+        $tariff{'tariff_cost'},                 # tariff_cost
+        $tariff{'tariff_initial_cost'},         # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        7,                                      # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    Util::log("ERROR",$uniqueid,"Trunk not found for this tariff. Exitting...");
+    $agi->hangup;
+    exit;
+} else {
+    Util::log("NOTICE",$uniqueid,"Trunk found for this tariff, proceeding...");
+}
+
+
+Util::log("NOTICE",$uniqueid,"Trunk ID is: $trunk{'name'}");
+Util::log("NOTICE",$uniqueid,"Trunk name is: $trunk{'trunk_id'}");
+Util::log("NOTICE",$uniqueid,"Trunk protocol is: $trunk{'proto'}");
+Util::log("NOTICE",$uniqueid,"Trunk dialstring is: $trunk{'dial'}");
+Util::log("NOTICE",$uniqueid,"Trunk add_prefix is: $trunk{'add_prefix'}");
+Util::log("NOTICE",$uniqueid,"Trunk remove_prefix ID is: $trunk{'remove_prefix'}");
+#$agi->set_variable("AbsoluteTimeout",$max_duration[1]);            # it would be ideal to set actual call duration limit according to max_duration
+
+
+# insert CDR for ongoing initialised call
+$cdr->insert(
+    $did,                                   # src
+    $cid,                                   # dst
+    $current_date,                          # calldate
+    0,                                      # billsec
+    $prefix{'prefix_id'},                   # prefix_id
+    $prefix{'country'},                     # country
+    $tariff{'tariff_id'},                   # tariff_id
+    $tariff{'tariff_cost'},                 # tariff_cost
+    $tariff{'tariff_initial_cost'},         # tariff_initial_cost
+    0,                                      # total cost
+    $account_details{'tenant_id'},          # tenant_id
+    $uniqueid,                              # uniqueid
+    33,                                     # cause_id / ID 33 is for ongoing calls
+    $account_details{'account_server_id'}   # server_id
+);
+
+
+Util::log("NOTICE",$uniqueid,"Manipulating destination number");
+$destination_number = Util::manipulate_dialstring($did,$trunk{"add_prefix"},$trunk{"remove_prefix"},$uniqueid);
+Util::log("NOTICE",$uniqueid,"Destination number after prefix manipulation is: $destination_number");
+$dialstring = "$trunk{'proto'}/$trunk{'dial'}/$destination_number";
+Util::log("NOTICE",$uniqueid,"Our dialstring is: $dialstring");
+$agi->exec("Dial","$trunk{'proto'}/$trunk{'dial'}/$destination_number");
+$billsec = $agi->get_variable('ANSWEREDTIME');                  # TODO move out to Call.pm?
+$disposition = $agi->get_variable('DIALSTATUS');
+
+
+if ($billsec == '' or !$billsec) {
+    $billsec = 0;
+}
+
+
+Util::log("NOTICE",$uniqueid,"Call duration was: $billsec");
+Util::log("NOTICE",$uniqueid,"Call disposition was: $disposition");
+$call_cost = $call->get_cost($billsec,$tariff{'tariff_initial_cost'});
+Util::log("NOTICE",$uniqueid,"Call cost was: $call_cost");
+
+
+# update account credit, if needed
+if ($account_details{'account_use_limit'} == 1) {
+    Util::log("NOTICE",$uniqueid,"There is limit set on this account, updating credit...");
+    my $update_credit_status = $account->update_credit($call_cost,$uniqueid);
+    Util::log("NOTICE",$uniqueid,"Updating credit: $update_credit_status");
+} else {
+    Util::log("NOTICE",$uniqueid,"There is no limit set on this account, not updating credit...");
+}
+
+
+# once call is passed to asterisk and finished, update CDR for initialised call
+switch ($disposition) {
+    case 'ANSWER' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"90");
+    }
+    case 'BUSY' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"91");
+    }
+    case 'NOANSWER' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"92");
+    }
+    case 'CANCEL' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"93");
+    }
+    case 'CONGESTION' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"94");
+    }
+    case 'CHANUNAVAIL' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"95");
+    }
+    case 'DONTCALL' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"96");
+    }
+    case 'TORTUNE' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"97");
+    }
+    case 'INVALIDARGS' {
+        $cdr->update($uniqueid,$billsec,$call_cost,"98");
+    }
+    else { # UNKNOWN
+        $cdr->update($uniqueid,$billsec,$call_cost,"99");
+    }
+}

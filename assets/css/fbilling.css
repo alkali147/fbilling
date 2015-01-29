@@ -1,0 +1,42 @@
+.fbilling {
+    margin : 0 5%;
+    border-width : 0;
+    width : 92%;
+    font-size: 8pt;
+}
+
+
+.fbilling th {
+    background-color : #5ebeff;
+    border-color : #000;
+    border-width : 2px;
+    text-align : center;
+}
+
+
+.fbilling .center_col {
+    width : 78%;
+    padding : 2px;
+}
+
+
+.fbilling .end_col {
+    width : 11%;
+    padding : 1px;
+}
+
+.fbilling .chart_data {
+    width : 3%;
+    padding : 0px;
+    text-align : right;
+}
+
+
+.fbilling .img_col {
+    width : 16px;
+    height : 16px;
+}
+
+.fbilling .a:link {
+    font-size: 10pt;
+}
