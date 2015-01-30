@@ -330,11 +330,14 @@ elseif ($action == 'add' or $action == 'edit') { // startif (action add/edit)
             }
             // check if array contains existent prefixes
             foreach ($import_array as $check) {
-                $prefix_exists = fbilling_check_if_exists($cat,'pref',$check[0]);
-                if ($prefix_exists > 0) {
-                    $err_coount = $err_coount +1;
-                    array_push($invalid_prefixes, $check[0]);
+                if ($check['0'] != 0) { // omit empty prefixes
+                    $prefix_exists = fbilling_check_if_exists($cat,'pref',$check[0]);
+                    if ($prefix_exists > 0) {
+                        $err_coount = $err_coount +1;
+                        array_push($invalid_prefixes, $check[0]);
+                    }
                 }
+                
             }
             // if one ore more prefix exists in db, exit
             if ($err_coount > 0) {
@@ -354,9 +357,11 @@ elseif ($action == 'add' or $action == 'edit') { // startif (action add/edit)
                 echo "<br />";
                 echo "<textarea rows='30' cols='100'>";
                 foreach ($import_array as $prefix) {
-                    $sql = "INSERT INTO billing_$cat (pref,country,description,weight_id,is_active) VALUES ('$prefix[0]','$prefix[1]','$prefix[2]','$prefix_weight_id','$prefix[3]') ON DUPLICATE KEY UPDATE pref = '$prefix[0]',country = '$prefix[1]',description = '$prefix[2]',weight_id = '$prefix_weight_id',is_active = '$prefix[3]'";
-                    echo $sql."\n";
-                    sql($sql);
+                    if ($prefix['0'] != '') { // omit empty prefixes
+                        $sql = "INSERT INTO billing_$cat (pref,country,description,weight_id,is_active) VALUES ('$prefix[0]','$prefix[1]','$prefix[2]','$prefix_weight_id','$prefix[3]') ON DUPLICATE KEY UPDATE pref = '$prefix[0]',country = '$prefix[1]',description = '$prefix[2]',weight_id = '$prefix_weight_id',is_active = '$prefix[3]'";
+                        echo $sql."\n";
+                        sql($sql);
+                    }
                 }
                 echo "</textarea>";
                 echo "<br />";

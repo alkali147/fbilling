@@ -332,17 +332,19 @@ elseif ($action == 'import') { // startif (action import)
             // check if array contains nonexistent tariffs
             // since we can only insert tariffs for already defined prefixes, if we wont find requested prefix, hit err_count
             foreach ($import_array as $check) {
-                $prefix_exists = fbilling_check_if_exists('prefixes','pref',$check[0]);
-                if ($prefix_exists == 0) {
-                    $err_count = $err_count +1;
-                    array_push($invalid_prefixes, $check[0]);
+                if ($check['0'] != 0) { // omit empty tariffs
+                    $prefix_exists = fbilling_check_if_exists('prefixes','pref',$check[0]);
+                    if ($prefix_exists == 0) {
+                        $err_count = $err_count +1;
+                        array_push($invalid_prefixes, $check[0]);
+                    }
                 }
             }
             if ($err_count > 0) { // notify user about errors
                 echo _("There are $err_count errors in CSV files...");
                 echo "<br />";
                 foreach ($invalid_prefixes as $invalid_prefix) {
-                    echo _("Prefix $invalid_prefix does not exist database");
+                    echo _("Prefix $invalid_prefix does not exist in database");
                     echo "<br />";
                 }
             } else {
@@ -350,9 +352,12 @@ elseif ($action == 'import') { // startif (action import)
                 echo "<br />";
                 echo "<textarea rows='30' cols='100'>";
                 foreach ($import_array as $tariff) {
-                    $sql = "INSERT INTO billing_tariffs (prefix_id,cost,initial_cost,trunk_id,tenant_id) VALUES((SELECT id FROM billing_prefixes WHERE pref = '$tariff[0]'),'$tariff[1]','$tariff[2]','$trunk_id','$tenant_id') ON DUPLICATE KEY UPDATE prefix_id = (SELECT id FROM billing_prefixes WHERE pref = '$tariff[0]'),cost = '$tariff[1]',initial_cost = '$tariff[2]',trunk_id = '$trunk_id',tenant_id = '$tenant_id'";
-                    echo $sql."\n";
-                    sql($sql);
+                    if ($tariff['0'] != '') { // omit empty tariffs
+                        $sql = "INSERT INTO billing_tariffs (prefix_id,cost,initial_cost,trunk_id,tenant_id) VALUES((SELECT id FROM billing_prefixes WHERE pref = '$tariff[0]'),'$tariff[1]','$tariff[2]','$trunk_id','$tenant_id') ON DUPLICATE KEY UPDATE prefix_id = (SELECT id FROM billing_prefixes WHERE pref = '$tariff[0]'),cost = '$tariff[1]',initial_cost = '$tariff[2]',trunk_id = '$trunk_id',tenant_id = '$tenant_id'";
+                        echo $sql."\n";
+                        sql($sql);
+                    }
+                    
                 }
                 echo "</textarea>";
                 echo "<br />";
