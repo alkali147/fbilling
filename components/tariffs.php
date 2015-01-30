@@ -255,6 +255,12 @@ elseif ($action == 'conf_edit') {
 
 
 elseif ($action == 'import') { // startif (action import)
+    echo _("Uploaded CSV file should contain three values per row - Pattern to match, per minute cost, one time cost");
+    echo "<br />";
+    echo _("Download sample template file");
+    echo "<a href=/fbilling_data/fbilling_tariffs_TEMPLATE.csv>&nbspTemplate File</a>";
+    echo "<br />";
+    echo "<br />";
 ?>
     <form enctype='multipart/form-data' method='POST' name='import_tariffs' onsubmit='return check_import_form();'>
         <table>

@@ -267,6 +267,13 @@ elseif ($action == 'add' or $action == 'edit') { // startif (action add/edit)
 
 
     elseif ($action == 'import') { // startif (action import)
+        echo _("Uploaded CSV file should contain four values per row - Pattern to match, Country, Description, and State");
+        echo "<br />";
+        echo _("Download sample template file");
+        echo "<a href=/fbilling_data/fbilling_prefixes_TEMPLATE.csv>&nbspTemplate File</a>";
+        echo "<br />";
+        echo "<br />";
+
 ?>
 
 
