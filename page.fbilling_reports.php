@@ -34,8 +34,10 @@ if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed');}
 global $db;
 
 $cat = isset($_REQUEST['cat'])?$_REQUEST['cat']:'detailed_search';
-$src = isset($_REQUEST['src'])?$_REQUEST['src']:'all';
-$dst = isset($_REQUEST['dst'])?$_REQUEST['dst']:'all';
+if ($_REQUEST['src'] == '' or !$_REQUEST['src']) {$src = 'all';} else {$src = $_REQUEST['src'];}
+if ($_REQUEST['dst'] == '' or !$_REQUEST['dst']) {$dst = 'all';} else {$dst = $_REQUEST['dst'];}
+$src_match = isset($_REQUEST['src_match'])?$_REQUEST['src_match']:'false';
+$dst_match = isset($_REQUEST['dst_match'])?$_REQUEST['dst_match']:'false';
 $year_start = isset($_REQUEST['year_start'])?$_REQUEST['year_start']:date('Y');
 $month_start = isset($_REQUEST['month_start'])?$_REQUEST['month_start']:date('m');
 $day_start = isset($_REQUEST['day_start'])?$_REQUEST['day_start']:date('d');
@@ -98,12 +100,18 @@ if ($cat == 'detailed_search') {
     <th><?php echo _("Action"); ?></th>
     <tr>
         <td><?php echo _("Source"); ?></td>
-        <td><input type'text' name='src' tabindex="<?php echo ++$tabindex;?>" value=<?php echo $_REQUEST['src']; ?> ></td>
+        <td>
+            <input type'text' name='src' tabindex="<?php echo ++$tabindex;?>" value=<?php echo $_REQUEST['src']; ?> >
+            <input type="checkbox" name="src_match" tabindex="<?php echo ++$tabindex;?>" value="true" <?php if ($src_match == 'true') {echo 'checked';} ?> ><?php echo _("Exact"); ?><br>
+        </td>
         <td></td>
     </tr>
     <tr>
         <td><?php echo _("Destination"); ?></td>
-        <td><input type'text' name='dst' tabindex="<?php echo ++$tabindex;?>" value=<?php echo $_REQUEST['dst']; ?> ></td>
+        <td>
+            <input type'text' name='dst' tabindex="<?php echo ++$tabindex;?>" value=<?php echo $_REQUEST['dst']; ?> >
+            <input type="checkbox" name="dst_match" tabindex="<?php echo ++$tabindex;?>" value="true" <?php if ($dst_match == 'true') {echo 'checked';} ?> ><?php echo _("Exact"); ?><br>
+        </td>
         <td></td>
     </tr>
     <tr>
@@ -306,21 +314,38 @@ if ($cat == 'detailed_search') {
 
 
 <?php
-if ($src == 'all') {$src_sql = "LIKE '%'";} else {$src_sql = "LIKE '$src"."%'";}
-if ($dst == 'all') {$dst_sql = "LIKE '%'";} else {$dst_sql = "LIKE '$dst"."%'";}
+// generate sql ready string base on src, src_match, dst and dst_match
+if ($src == 'all') {
+    $src_match_sql = "LIKE '%'";
+} else {
+    if ($src_match == 'true' and $src != 'all') {
+        $src_match_sql = "= '$src'";
+    }
+    if ($src_match == 'false' and $src != 'all') {
+        $src_match_sql = "LIKE '%".$src."%'";
+    }
+}
+if ($dst == 'all') {
+    $dst_match_sql = "LIKE '%'";
+} else {
+    if ($dst_match == 'true' and $dst != 'all') {
+        $dst_match_sql = "= '$dst'";
+    }
+    if ($dst_match == 'false' and $dst != 'all') {
+        $dst_match_sql = "LIKE '%".$dst."%'";
+    }
+}
 if ($cause_id == 'all') {$cause_id_sql = "LIKE '%'";} else {$cause_id_sql = "= $cause_id";}
 if ($tenant_id == 'all') {$tenant_id_sql = "LIKE '%'";} else {$tenant_id_sql = "= $tenant_id";}
 //if ($weight_id == 'all') {$weight_id_sql = "LIKE '%'";} else {$weight_id_sql = "= $weight_id";}
 // used for all queries
-$sql_where = "billing_cdr.src $src_sql AND billing_cdr.dst $dst_sql AND billing_cdr.calldate > '$calldate_start' AND billing_cdr.calldate < '$calldate_end' AND billing_cdr.cause_id $cause_id_sql AND billing_cdr.tenant_id $tenant_id_sql";
+$sql_where = "billing_cdr.src $src_match_sql AND billing_cdr.dst $dst_match_sql AND billing_cdr.calldate > '$calldate_start' AND billing_cdr.calldate < '$calldate_end' AND billing_cdr.cause_id $cause_id_sql AND billing_cdr.tenant_id $tenant_id_sql";
 $sql_body_summary = "SELECT COUNT(*) AS number_of_calls, SUM(billsec) AS total_duration, AVG(billsec) AS average_duration, SUM(total_cost) AS total_cost, AVG(total_cost) AS average_cost FROM billing_cdr,billing_tenants,billing_causes WHERE billing_cdr.tenant_id = billing_tenants.id AND billing_cdr.cause_id = billing_causes.id AND $sql_where";
 $sql_body_main = "SELECT billing_cdr.src,billing_extensions.alias,billing_cdr.dst,billing_cdr.calldate,billing_cdr.billsec,billing_cdr.tariff_cost,billing_cdr.total_cost,billing_cdr.cause_id,billing_tenants.name AS tenant,billing_causes.name AS cause FROM billing_cdr,billing_tenants,billing_causes,billing_extensions WHERE billing_cdr.tenant_id = billing_tenants.id AND billing_cdr.cause_id = billing_causes.id AND billing_cdr.src = billing_extensions.sip_num AND $sql_where";
 $display_summary = sql($sql_body_summary, 'getRow', DB_FETCHMODE_ASSOC);
 $number_of_pages = ceil( $display_summary['number_of_calls'] / 20);
 $sql_body_main .= " ORDER BY calldate DESC LIMIT 20 OFFSET $offset";
 $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
-/*echo $sql_body_main."<br/>";
-echo $sql_body_summary."<br/>";*/
 ?>
 
 <h5>Search Results</h5>
