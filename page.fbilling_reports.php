@@ -82,7 +82,15 @@ $offset = $page == 1 ? 0 : $page * 20 - 20;
                 <input type="hidden" name="display" value="fbilling_reports">
                 <input type="hidden" name="action" value="search">
                 <input type="hidden" name="cat" value="detailed_search">
-                <input type="submit" tabindex="<?php echo ++$tabindex;?>" name="report_type_label" value="Detailed search" />
+                <input type="submit" tabindex="<?php echo ++$tabindex;?>" name="report_type_label" value="Detailed Search" />
+            </form>
+        </td>
+        <td>
+            <form method="GET" name="detailed_search">
+                <input type="hidden" name="display" value="fbilling_reports">
+                <input type="hidden" name="action" value="search">
+                <input type="hidden" name="cat" value="reports_by_tenant">
+                <input type="submit" tabindex="<?php echo ++$tabindex;?>" name="report_type_label" value="Reports By Tenant" />
             </form>
         </td>
     </tr>
@@ -92,7 +100,7 @@ $offset = $page == 1 ? 0 : $page * 20 - 20;
 // start detailed search
 if ($cat == 'detailed_search') {
 ?>
-<h5>Search Call Detail Records</h5>
+<h5><?php echo _("Search Call Detail Records"); ?></h5>
 <form method='GET'>
 <table class='fbilling'>
     <th><?php echo _("Filter"); ?></th>
@@ -299,10 +307,6 @@ if ($cat == 'detailed_search') {
                 ?>
             </select>
         </td>-->
-
-            
-            
-
     </tr>
     <tr>
         <input type='hidden' name='display' value='fbilling_reports'>
@@ -349,7 +353,7 @@ $sql_body_main .= " ORDER BY calldate DESC LIMIT 20 OFFSET $offset";
 $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
 ?>
 
-<h5>Search Results</h5>
+<h5><?php echo _("Search Results") ?></h5>
 <hr>
 <table class='fbilling'>
     <th><?php echo _("Source"); ?></th>
@@ -376,7 +380,7 @@ $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
             echo "<tr>";
         }
     ?>
-</fbilling>
+</table>
 
 <?php
     page_cdr($number_of_pages,$page,$cat);
@@ -408,4 +412,226 @@ $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
 // end detailed search
 }
 
+
+// start reports by tenant
+if ($cat == 'reports_by_tenant') {
+?>
+<h5><?php echo _("Display Reports by Tenant"); ?></h5>
+<form method='GET'>
+<table class='fbilling'>
+    <th><?php echo _("Filter"); ?></th>
+    <th><?php echo _("Value"); ?></th>
+    <th><?php echo _("Action"); ?></th>
+    <tr>
+        <td><?php echo _("Start Date"); ?></td>
+        <td> 
+            <select name="year_start" id="year_start">
+                <?php
+                    for ($y_start = 2007; $y_start <= date('Y'); $y_start++) {
+                        if ($year_start == $y_start) {
+                            echo "<option value='$y_start' selected='selected'>$y_start</option>";
+                        } else {
+                            echo "<option value='$y_start'>$y_start</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="month_start" id="month_start">
+                <?php
+                    foreach ($month_list as $i => $month) {
+                        if ($month_start == $i) {
+                            echo "<option value='$i' selected='selected'>$month</option>";
+                        } else {
+                            echo "<option value='$i'>$month</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="day_start" id="day_start">
+                <?php
+                    for ($d_start = 01; $d_start <= 31; $d_start++) {
+                        if ($day_start == $d_start) {
+                            if ($d_start < 10) {$d_start = '0'.$d_start;}
+                            echo "<option value=\"$d_start\" selected=\"selected\">$d_start</option>\n";
+                        } else {
+                            echo "<option value=\"$d_start\">$d_start</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="hour_start" id="hour_start">
+                <?php
+                    for ($h_start = 00; $h_start <= 23; $h_start++) {
+                        if ($hour_start == $h_start) {
+                            if ($h_start < 10) {$h_start = "0".$h_start;}
+                            echo "<option value=\"$h_start\" selected=\"selected\">$h_start</option>\n";
+                        } else {
+                            if ($h_start < 10) {$h_start = "0".$h_start;}
+                            echo "<option value=\"$h_start\">$h_start</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="minute_start" id="minute_start">
+                <?php
+                    for ($m_start = 00; $m_start <= 59; $m_start++) {
+                        if ($minute_start == $m_start) {
+                            if ($m_start < 10) {$m_start = "0".$m_start;}
+                            echo "<option value=\"$m_start\" selected=\"selected\">$m_start</option>\n";
+                        } else {
+                            if ($m_start < 10) {$m_start = "0".$m_start;}
+                            echo "<option value=\"$m_start\">$m_start</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+        </td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><?php echo _("End Date"); ?></td>
+        <td> 
+            <select name="year_end" id="year_end">
+                <?php
+                    for ($y_end = 2007; $y_end <= date('Y'); $y_end++) {
+                        if ($year_end == $y_end) {
+                            echo "<option value='$y_end' selected='selected'>$y_end</option>";
+                        } else {
+                            echo "<option value='$y_end'>$y_end</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="month_end" id="month_end">
+                <?php
+                    foreach ($month_list as $i => $month) {
+                        if ($month_end == $i) {
+                            echo "<option value='$i' selected='selected'>$month</option>";
+                        } else {
+                            echo "<option value='$i'>$month</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="day_end" id="day_end">
+                <?php
+                    for ($d_end = 01; $d_end <= 31; $d_end++) {
+                        if ($day_end == $d_end) {
+                            if ($d_end < 10) {$d_end = '0'.$d_end;}
+                            echo "<option value=\"$d_end\" selected=\"selected\">$d_end</option>\n";
+                        } else {
+                            if ($d_end < 10) {$d_end = '0'.$d_end;}
+                            echo "<option value=\"$d_end\">$d_end</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="hour_end" id="hour_end">
+                <?php
+                    for ($h_end = 00; $h_end <= 23; $h_end++) {
+                        if ($hour_end == $h_end) {
+                            if ($h_end < 10) {$h_end = "0".$h_end;}
+                            echo "<option value=\"$h_end\" selected=\"selected\">$h_end</option>\n";
+                        } else {
+                            if ($h_end < 10) {$h_end = "0".$h_end;}
+                            echo "<option value='$h_end'>$h_end</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="minute_end" id="minute_end">
+                <?php
+                    for ($m_end = 00; $m_end <= 59; $m_end++) {
+                        if ($minute_end == $m_end) {
+                            if ($m_end < 10) {$m_end = "0".$m_end;}
+                            echo "<option value=\"$m_end\" selected=\"selected\">$m_end</option>\n";
+                        } else {
+                            if ($m_end < 10) {$m_end = "0".$m_end;}
+                            echo "<option value=\"$m_end\">$m_end</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+        </td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><?php echo _("Tenant"); ?></td>
+        <td>
+            <select name='tenant_id' tabindex="<?php echo ++$tabindex;?>">
+                <option value='all'>All</option>
+                <?php
+                    foreach ($tenant_list as $tenant) {
+                        if ($tenant_id == $tenant['id']) {
+                            echo "<option selected value=$tenant[id]>$tenant[name]</option>";
+                        } else {
+                            echo "<option value=$tenant[id]>$tenant[name]</option>";
+                        }
+                    }
+                ?>
+            </select>
+        </td>
+        <td><input type='submit' tabindex="<?php echo ++$tabindex;?>" value='Display'></td>
+    </tr>
+    <tr>
+        <input type='hidden' name='display' value='fbilling_reports'>
+        <input type='hidden' name='cat' value='reports_by_tenant'>
+        <input type='hidden' name='action' value='search'>
+    </tr>
+    
+</table>
+</form>
+<?php
+if ($tenant_id != 'all') {  // we do not display anything if no tenant is selected
+?>
+    <h5><?php echo _("Search Results"); ?></h5>
+    <hr>
+<?php
+$sql = "SELECT billing_cdr.src AS src, billing_extensions.alias AS alias, COUNT(*) AS number_of_calls, SUM(total_cost) AS total_cost, ";
+$sql .= "SUM(billing_cdr.billsec) AS sum_billsec ";
+$sql .= "FROM billing_extensions,billing_cdr WHERE ";
+$sql .= "billing_cdr.calldate > '$calldate_start' AND billing_cdr.calldate < '$calldate_end' AND ";
+$sql .= "billing_extensions.sip_num = billing_cdr.src AND ";
+$sql .= "billing_cdr.tenant_id = '$tenant_id'";
+$display_summary = sql($sql,'getRow',DB_FETCHMODE_ASSOC);
+$sql .= " GROUP BY billing_cdr.src";
+$search_results = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
+?>
+<table class='fbilling'>
+    <th><?php echo _("Extension"); ?></th>
+    <th><?php echo _("Name"); ?></th>
+    <th><?php echo _("Number of Calls"); ?></th>
+    <th><?php echo _("Total Duration"); ?></th>
+    <th><?php echo _("Total Cost"); ?></th>
+    <?php
+        foreach ($search_results as $cdr) {
+            echo "<tr>";
+                echo "<td><a href=/admin/config.php?display=extensions&extdisplay=$cdr[src]>$cdr[src]<a/></td>";
+                echo "<td>$cdr[alias]</td>";
+                echo "<td>$cdr[number_of_calls]</td>";
+                echo "<td>".$cdr[sum_billsec]."</td>";
+                echo "<td>".round($cdr[total_cost],2)."</td>";
+            echo "<tr>";
+        }
+    ?>
+</table>
+<hr>
+<table class='fbilling'>
+    <tr>
+        <td><?php echo _("Total number of calls"); ?></td>
+        <td><?php echo $display_summary['number_of_calls']; ?></td>
+    </tr>
+    <tr>
+        <td><?php echo _("Total duation of calls (min)"); ?></td>
+        <td><?php echo ceil($display_summary['sum_billsec'] / 60); ?></td>
+    </tr>
+    <tr>
+        <td><?php echo _("Total cost of calls"); ?></td>
+        <td><?php echo round($display_summary['total_cost'],2); ?></td>
+    </tr>
+</table>
+<?php
+}
+// end reports by tenant
+}
 ?>
