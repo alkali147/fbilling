@@ -143,6 +143,7 @@ if ($cat == 'detailed_search') {
                 <?php
                     for ($d_start = 01; $d_start <= 31; $d_start++) {
                         if ($day_start == $d_start) {
+                            if ($d_start < 10) {$d_start = '0'.$d_start;}
                             echo "<option value=\"$d_start\" selected=\"selected\">$d_start</option>\n";
                         } else {
                             echo "<option value=\"$d_start\">$d_start</option>\n";
@@ -363,7 +364,7 @@ $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
     <?php
         foreach ($search_results as $cdr) {
             echo "<tr>";
-            echo "<td>$cdr[src]</td>";
+            echo "<td><a href=/admin/config.php?display=extensions&extdisplay=$cdr[src]>$cdr[src]<a/></td>";
             echo "<td>$cdr[alias]</td>";
             echo "<td>$cdr[dst]</td>";
             echo "<td>$cdr[calldate]</td>";
