@@ -46,29 +46,29 @@ $queries[] = "CREATE TABLE IF NOT EXISTS `billing_causes` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 ";
 $queries[] = "INSERT INTO `billing_causes` (`id`, `name`) VALUES
-	(33, 'Ongoing'),
-	(1, 'Account does not exist'),
-	(2, 'Account has no credit'),
-	(3, 'Prefix does not exist'),
-	(4, 'Tariff does not exist'),
-	(5, 'Account has no permission to call'),
-	(6, 'Minimum duration of call is to low'),
-	(7, 'Trunk not found for destination '),
-	(8, 'Initial cost is more than account credit'),
-	(9, 'Tenant is not active'),
-	(10, 'Prefix is not active'),
-	(11, 'Permission does not exists'),
-	(12, 'Permission is not active'),
-	(90, 'Call finished - ANSWER'),
-	(91, 'Call finished - BUSY'),
-	(92, 'Call finished - NO ANSWER'),
-	(93, 'Call finished - CANCEL'),
-	(94, 'Call finished - CONGESTION'),
-	(95, 'Call finished - CHANUNAVAIL'),
-	(96, 'Call finished - DONTCALL'),
-	(97, 'Call finished - TORTURE'),
-	(98, 'Call finished - INVALIDARGS'),
-	(99, 'Call finished - UNKNOWN');
+  (33, 'Ongoing'),
+  (1, 'Account does not exist'),
+  (2, 'Account has no credit'),
+  (3, 'Prefix does not exist'),
+  (4, 'Tariff does not exist'),
+  (5, 'Account has no permission to call'),
+  (6, 'Minimum duration of call is to low'),
+  (7, 'Trunk not found for destination '),
+  (8, 'Initial cost is more than account credit'),
+  (9, 'Tenant is not active'),
+  (10, 'Prefix is not active'),
+  (11, 'Permission does not exists'),
+  (12, 'Permission is not active'),
+  (90, 'Call finished - ANSWER'),
+  (91, 'Call finished - BUSY'),
+  (92, 'Call finished - NO ANSWER'),
+  (93, 'Call finished - CANCEL'),
+  (94, 'Call finished - CONGESTION'),
+  (95, 'Call finished - CHANUNAVAIL'),
+  (96, 'Call finished - DONTCALL'),
+  (97, 'Call finished - TORTURE'),
+  (98, 'Call finished - INVALIDARGS'),
+  (99, 'Call finished - UNKNOWN');
 ";
 $queries[] = "CREATE TABLE IF NOT EXISTS `billing_cdr` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -77,6 +77,7 @@ $queries[] = "CREATE TABLE IF NOT EXISTS `billing_cdr` (
   `calldate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `billsec` int(11) NOT NULL DEFAULT '0',
   `prefix_id` int(11) NOT NULL DEFAULT '0',
+  `weight_id` int(11) NOT NULL DEFAULT '0',
   `country` varchar(16) DEFAULT NULL,
   `tariff_id` int(11) NOT NULL DEFAULT '0',
   `tariff_cost` float NOT NULL DEFAULT '0',
@@ -174,10 +175,10 @@ $queries[] = "CREATE TABLE IF NOT EXISTS `billing_weights` (
 
 
 foreach ($queries as $sql) {
-	$resuult = $db->query($sql);
-	if (DB::IsError($check)) {
+  $resuult = $db->query($sql);
+  if (DB::IsError($check)) {
         die_freepbx( "Can not create tables: ".$result->getMessage()."\n");
-	}
+  }
 }
 
 

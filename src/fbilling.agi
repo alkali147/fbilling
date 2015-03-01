@@ -207,6 +207,7 @@ if ($account_details{'tenant_is_active'} == 1) {
         $current_date,                          # calldate
         0,                                      # billsec
         0,                                      # prefix_id
+        0,                                      # weight_id
         0,                                      # country
         0,                                      # tariff_id
         0,                                      # tariff_cost
@@ -233,6 +234,7 @@ if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, 
             $current_date,                          # calldate
             0,                                      # billsec
             0,                                      # prefix_id
+            0,                                      # weight_id
             0,                                      # country
             0,                                      # tariff_id
             0,                                      # tariff_cost
@@ -266,6 +268,7 @@ if ($prefix{'prefix_id'} == 0) {
         $current_date,                          # calldate
         0,                                      # billsec
         0,                                      # prefix_id
+        0,                                      # weight_id
         0,                                      # country
         0,                                      # tariff_id
         0,                                      # tariff_cost
@@ -298,8 +301,9 @@ if ($prefix{"is_active"} == 0) {
         $cid,                                   # dst
         $current_date,                          # calldate
         0,                                      # billsec
-        0,                                      # prefix_id
-        0,                                      # country
+        $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'weight_id'},                   # weight_id
+        $prefix{'country'},                     # country
         0,                                      # tariff_id
         0,                                      # tariff_cost
         0,                                      # tariff_initial_cost
@@ -327,6 +331,7 @@ if ($tariff{"tariff_id"} == 0) {
         $current_date,                          # calldate
         0,                                      # billsec
         $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'weight_id'},                   # weight_id
         $prefix{'country'},                     # country 
         0,                                      # tariff_id
         0,                                      # tariff_cost
@@ -377,6 +382,7 @@ if ($permission_details{'permission_id'} == 0) {
         $current_date,                          # calldate
         0,                                      # billsec
         $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'weight_id'},                   # weight_id
         $prefix{'country'},                     # country
         0,                                      # tariff_id
         0,                                      # tariff_cost
@@ -408,6 +414,7 @@ if ($permission_details{'permission_is_active'} == 0) {
         $current_date,                          # calldate
         0,                                      # billsec
         $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'weight_id'},                   # weight_id
         $prefix{'country'},                     # country
         0,                                      # tariff_id
         0,                                      # tariff_cost
@@ -436,6 +443,7 @@ if ($permission_ok == 0) {
         $current_date,                          # calldate
         0,                                      # billsec
         $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'weight_id'},                   # weight_id
         $prefix{'country'},                     # country
         0,                                      # tariff_id
         0,                                      # tariff_cost
@@ -468,6 +476,7 @@ if ($max_duration[0] < 60) {
         $current_date,                          # calldate
         0,                                      # billsec
         $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'weight_id'},                   # weight_id
         $prefix{'country'},                     # country
         $tariff{'tariff_id'},                   # tariff_id
         $tariff{'tariff_cost'},                 # tariff_cost
@@ -494,6 +503,7 @@ if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'
         $current_date,                          # calldate
         0,                                      # billsec
         $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'weight_id'},                   # weight_id
         $prefix{'country'},                     # country
         $tariff{'tariff_id'},                   # tariff_id
         $tariff{'tariff_cost'},                 # tariff_cost
@@ -521,6 +531,7 @@ if ($trunk{"trunk_id"} == 0) {
         $current_date,                          # calldate
         0,                                      # billsec
         $prefix{'prefix_id'},                   # prefix_id
+        $prefix{'weight_id'},                   # weight_id
         $prefix{'country'},                     # country
         $tariff{'tariff_id'},                   # tariff_id
         $tariff{'tariff_cost'},                 # tariff_cost
@@ -555,6 +566,7 @@ $cdr->insert(
     $current_date,                          # calldate
     0,                                      # billsec
     $prefix{'prefix_id'},                   # prefix_id
+    $prefix{'weight_id'},                   # weight_id
     $prefix{'country'},                     # country
     $tariff{'tariff_id'},                   # tariff_id
     $tariff{'tariff_cost'},                 # tariff_cost

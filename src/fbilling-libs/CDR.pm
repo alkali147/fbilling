@@ -30,6 +30,7 @@
 
 ### CHANGELOG ############################################################################
 # 15v1.21-1  - minor tweaks and cleanup
+# 15v3.1-1   - added weight_id insertion capabilities
 ### END CHANGELOG ########################################################################
 
 
@@ -124,6 +125,7 @@ sub insert {
     my $calldate = shift;
     my $billsec = shift;
     my $prefix_id = shift;
+    my $weight_id = shift;
     my $country = shift;
     my $tariff_id = shift;
     my $tariff_cost = shift;
@@ -133,7 +135,7 @@ sub insert {
     my $uniqueid = shift;
     my $cause_id = shift;
     my $server_id = shift;
-    my $query_insert_cdr = "INSERT INTO billing_cdr(src,dst,calldate,billsec,prefix_id,country,tariff_id,tariff_cost,tariff_initial_cost,total_cost,tenant_id,uniqueid,cause_id,server_id) VALUES('$src','$dst','$calldate','$billsec','$prefix_id','$country','$tariff_id','$tariff_cost','$tariff_initial_cost','$total_cost','$tenant_id','$uniqueid','$cause_id','$server_id')";
+    my $query_insert_cdr = "INSERT INTO billing_cdr(src,dst,calldate,billsec,prefix_id,weight_id,country,tariff_id,tariff_cost,tariff_initial_cost,total_cost,tenant_id,uniqueid,cause_id,server_id) VALUES('$src','$dst','$calldate','$billsec','$prefix_id','$weight_id','$country','$tariff_id','$tariff_cost','$tariff_initial_cost','$total_cost','$tenant_id','$uniqueid','$cause_id','$server_id')";
     Util::log("NOTICE",$uniqueid,"Executing query to insert CDR: $query_insert_cdr");
     my $sth_insert_cdr = $dbh->prepare($query_insert_cdr);
     $sth_insert_cdr->execute;
