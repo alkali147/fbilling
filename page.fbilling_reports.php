@@ -571,6 +571,24 @@ if ($cat == 'reports_by_tenant') {
                 ?>
             </select>
         </td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><?php echo _("Weight"); ?></td>
+        <td>
+            <select name='weight_id' tabindex="<?php echo ++$tabindex;?>">
+                <option value='all'>All</option>
+                <?php
+                    foreach ($weight_list as $weight) {
+                        if ($weight_id == $weight['id']) {
+                            echo "<option selected value=$weight[id]>$weight[name]</option>";
+                        } else {
+                            echo "<option value=$weight[id]>$weight[name]</option>";
+                        }
+                    }
+                ?>
+            </select>
+        </td>
         <td><input type='submit' tabindex="<?php echo ++$tabindex;?>" value='Display'></td>
     </tr>
     <tr>
@@ -587,15 +605,22 @@ if ($tenant_id != 'all') {  // we do not display anything if no tenant is select
     <h5><?php echo _("Search Results"); ?></h5>
     <hr>
 <?php
+if ($weight_id == 'all') {
+    $weight_id_sql = " AND billing_cdr.weight_id LIKE '%'";
+} else {
+    $weight_id_sql = " AND billing_cdr.weight_id = '$weight_id'";
+}
 $sql = "SELECT billing_cdr.src AS src, billing_extensions.alias AS alias, COUNT(*) AS number_of_calls, SUM(total_cost) AS total_cost, ";
 $sql .= "SUM(billing_cdr.billsec) AS sum_billsec ";
 $sql .= "FROM billing_extensions,billing_cdr WHERE ";
 $sql .= "billing_cdr.calldate > '$calldate_start' AND billing_cdr.calldate < '$calldate_end' AND ";
 $sql .= "billing_extensions.sip_num = billing_cdr.src AND ";
 $sql .= "billing_cdr.tenant_id = '$tenant_id'";
+$sql .= $weight_id_sql;
 $display_summary = sql($sql,'getRow',DB_FETCHMODE_ASSOC);
 $sql .= " GROUP BY billing_cdr.src";
 $search_results = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
+#echo $weight_id_sql;
 ?>
 <table class='fbilling'>
     <th><?php echo _("Extension"); ?></th>
