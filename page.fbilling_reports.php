@@ -292,13 +292,13 @@ if ($cat == 'detailed_search') {
         <td><input type='submit' tabindex="<?php echo ++$tabindex;?>" value='Search'></td>
     </tr>
     <tr>
-        <!--<td><?php echo _("Destination Weight"); ?></td>
+        <td><?php echo _("Destination Weight"); ?></td>
         <td>
             <select name='weight_id' tabindex="<?php echo ++$tabindex;?>">
                 <option value='all'>All</option>
                 <?php
                     foreach ($weight_list as $weight) {
-                        if ($weight_id == $tenant['id']) {
+                        if ($weight_id == $weight['id']) {
                             echo "<option selected value=$weight[id]>$weight[name]</option>";
                         } else {
                             echo "<option value=$weight[id]>$weight[name]</option>";
@@ -306,7 +306,7 @@ if ($cat == 'detailed_search') {
                     }
                 ?>
             </select>
-        </td>-->
+        </td>
     </tr>
     <tr>
         <input type='hidden' name='display' value='fbilling_reports'>
@@ -342,15 +342,16 @@ if ($dst == 'all') {
 }
 if ($cause_id == 'all') {$cause_id_sql = "LIKE '%'";} else {$cause_id_sql = "= $cause_id";}
 if ($tenant_id == 'all') {$tenant_id_sql = "LIKE '%'";} else {$tenant_id_sql = "= $tenant_id";}
-//if ($weight_id == 'all') {$weight_id_sql = "LIKE '%'";} else {$weight_id_sql = "= $weight_id";}
+if ($weight_id == 'all') {$weight_id_sql = "LIKE '%'";} else {$weight_id_sql = "= $weight_id";}
 // used for all queries
-$sql_where = "billing_cdr.src $src_match_sql AND billing_cdr.dst $dst_match_sql AND billing_cdr.calldate > '$calldate_start' AND billing_cdr.calldate < '$calldate_end' AND billing_cdr.cause_id $cause_id_sql AND billing_cdr.tenant_id $tenant_id_sql";
+$sql_where = "billing_cdr.src $src_match_sql AND billing_cdr.dst $dst_match_sql AND billing_cdr.calldate > '$calldate_start' AND billing_cdr.calldate < '$calldate_end' AND billing_cdr.cause_id $cause_id_sql AND billing_cdr.tenant_id $tenant_id_sql AND billing_cdr.weight_id $weight_id_sql";
 $sql_body_summary = "SELECT COUNT(*) AS number_of_calls, SUM(billsec) AS total_duration, AVG(billsec) AS average_duration, SUM(total_cost) AS total_cost, AVG(total_cost) AS average_cost FROM billing_cdr,billing_tenants,billing_causes WHERE billing_cdr.tenant_id = billing_tenants.id AND billing_cdr.cause_id = billing_causes.id AND $sql_where";
 $sql_body_main = "SELECT billing_cdr.src,billing_extensions.alias,billing_cdr.dst,billing_cdr.calldate,billing_cdr.billsec,billing_cdr.tariff_cost,billing_cdr.total_cost,billing_cdr.cause_id,billing_tenants.name AS tenant,billing_causes.name AS cause FROM billing_cdr,billing_tenants,billing_causes,billing_extensions WHERE billing_cdr.tenant_id = billing_tenants.id AND billing_cdr.cause_id = billing_causes.id AND billing_cdr.src = billing_extensions.sip_num AND $sql_where";
 $display_summary = sql($sql_body_summary, 'getRow', DB_FETCHMODE_ASSOC);
 $number_of_pages = ceil( $display_summary['number_of_calls'] / 20);
 $sql_body_main .= " ORDER BY calldate DESC LIMIT 20 OFFSET $offset";
 $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
+echo $sql_body_main;
 ?>
 
 <h5><?php echo _("Search Results") ?></h5>
