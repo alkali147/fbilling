@@ -154,6 +154,7 @@ if ($cat == 'detailed_search') {
                             if ($d_start < 10) {$d_start = '0'.$d_start;}
                             echo "<option value=\"$d_start\" selected=\"selected\">$d_start</option>\n";
                         } else {
+                            if ($d_start < 10) {$d_start = '0'.$d_start;}
                             echo "<option value=\"$d_start\">$d_start</option>\n";
                         }
                     }
@@ -271,7 +272,7 @@ if ($cat == 'detailed_search') {
                 ?>
             </select>
         </td>
-        <td></td>
+        <td><input type='submit' tabindex="<?php echo ++$tabindex;?>" name='export' value='Export'></td>
     </tr>
     <tr>
         <td><?php echo _("Tenant"); ?></td>
@@ -313,7 +314,6 @@ if ($cat == 'detailed_search') {
         <input type='hidden' name='cat' value='detailed_search'>
         <input type='hidden' name='action' value='search'>
     </tr>
-    
 </table>
 </form>
 
@@ -349,12 +349,15 @@ $sql_body_summary = "SELECT COUNT(*) AS number_of_calls, SUM(billsec) AS total_d
 $sql_body_main = "SELECT billing_cdr.src,billing_extensions.alias,billing_cdr.dst,billing_cdr.calldate,billing_cdr.billsec,billing_cdr.tariff_cost,billing_cdr.total_cost,billing_cdr.cause_id,billing_tenants.name AS tenant,billing_causes.name AS cause FROM billing_cdr,billing_tenants,billing_causes,billing_extensions WHERE billing_cdr.tenant_id = billing_tenants.id AND billing_cdr.cause_id = billing_causes.id AND billing_cdr.src = billing_extensions.sip_num AND $sql_where";
 $display_summary = sql($sql_body_summary, 'getRow', DB_FETCHMODE_ASSOC);
 $number_of_pages = ceil( $display_summary['number_of_calls'] / 20);
+// we need to generate csv file just before offset kicks in
+if ($_REQUEST['export'] == 'Export') { // if user hit export button generate csv file
+    $csv_file_url = fbilling_get_csv_file($cat,$sql_body_main);
+}
 $sql_body_main .= " ORDER BY calldate DESC LIMIT 20 OFFSET $offset";
 $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
-echo $sql_body_main;
+// if export button was hit show download link
 ?>
-
-<h5><?php echo _("Search Results") ?></h5>
+<h5><?php echo _("Search Results"); echo "&nbsp"; if ($_REQUEST['export'] == 'Export') {echo "<a href=/fbilling_data/$csv_file_url>Download CSV file</a>";} ?></h5>
 <hr>
 <table class='fbilling'>
     <th><?php echo _("Source"); ?></th>
@@ -455,6 +458,7 @@ if ($cat == 'reports_by_tenant') {
                             if ($d_start < 10) {$d_start = '0'.$d_start;}
                             echo "<option value=\"$d_start\" selected=\"selected\">$d_start</option>\n";
                         } else {
+                            if ($d_start < 10) {$d_start = '0'.$d_start;}
                             echo "<option value=\"$d_start\">$d_start</option>\n";
                         }
                     }
@@ -572,7 +576,7 @@ if ($cat == 'reports_by_tenant') {
                 ?>
             </select>
         </td>
-        <td></td>
+        <td><input type='submit' tabindex="<?php echo ++$tabindex;?>" name='export' value='Export'></td>
     </tr>
     <tr>
         <td><?php echo _("Weight"); ?></td>
@@ -602,10 +606,6 @@ if ($cat == 'reports_by_tenant') {
 </form>
 <?php
 if ($tenant_id != 'all') {  // we do not display anything if no tenant is selected
-?>
-    <h5><?php echo _("Search Results"); ?></h5>
-    <hr>
-<?php
 if ($weight_id == 'all') {
     $weight_id_sql = " AND billing_cdr.weight_id LIKE '%'";
 } else {
@@ -621,8 +621,13 @@ $sql .= $weight_id_sql;
 $display_summary = sql($sql,'getRow',DB_FETCHMODE_ASSOC);
 $sql .= " GROUP BY billing_cdr.src";
 $search_results = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
+if ($_REQUEST['export'] == 'Export') { // if user hit export button generate csv file
+    $csv_file_url = fbilling_get_csv_file($cat,$sql);
+}
 #echo $weight_id_sql;
 ?>
+<h5><?php echo _("Search Results"); echo "&nbsp"; if ($_REQUEST['export'] == 'Export') {echo "<a href=/fbilling_data/$csv_file_url>Download CSV file</a>";} ?></h5>
+<hr>
 <table class='fbilling'>
     <th><?php echo _("Extension"); ?></th>
     <th><?php echo _("Name"); ?></th>
