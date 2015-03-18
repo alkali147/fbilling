@@ -192,8 +192,8 @@ function fbilling_configprocess() {
 # requires component (category) name
 # returns associative array containing id and name of components
 function fbilling_get_list($cat) {
-	$sql = "SELECT id,name FROM billing_$cat WHERE 1";
-	$list = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
+    $sql = "SELECT id,name FROM billing_$cat WHERE 1";
+    $list = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
     return $list;
 }
 
@@ -318,8 +318,10 @@ function page_cdr($number_of_pages,$page) {
     ";
 }
 
+
 // generate csv file with requested data and return file url
 // requires component name and sql query
+// returns filename
 function fbilling_get_csv_file($cat,$sql) {
     $stamp = time();
     $basedir = "/var/www/html/fbilling_data/";
@@ -336,6 +338,16 @@ function fbilling_get_csv_file($cat,$sql) {
     }
     fwrite($csv_file, $data);
     return $filename;
+}
+
+
+// generates url according to requested parameteres
+// requires array of GET parameters and baseurl
+// returns url
+function fbilling_build_url($baseurl,$parameters) {
+    $url = "/admin/config.php?display=fbilling_reports&cat=detailed_search&action=search&day_start=01&";
+    $url .= $parameters;
+    return $url;
 }
 
 

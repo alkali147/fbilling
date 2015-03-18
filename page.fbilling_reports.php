@@ -369,8 +369,11 @@ $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
     <th><?php echo _("Total Cost"); ?></th>
     <th><?php echo _("Tenant"); ?></th>
     <th><?php echo _("Cause"); ?></th>
+    <th colspan=2><?php echo _("Action"); ?></th>
     <?php
         foreach ($search_results as $cdr) {
+            $dst_url = fbilling_build_url("test","dst=$cdr[dst]");
+            $src_url = fbilling_build_url("test","src=$cdr[src]");
             echo "<tr>";
             echo "<td><a href=/admin/config.php?display=extensions&extdisplay=$cdr[src]>$cdr[src]<a/></td>";
             echo "<td>$cdr[alias]</td>";
@@ -381,6 +384,8 @@ $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
             echo "<td>$cdr[total_cost]</td>";
             echo "<td>$cdr[tenant]</td>";
             echo "<td>$cdr[cause]</td>";
+            echo "<td><a href=$dst_url>Calls to this number</a></td>";
+            echo "<td><a href=$src_url>Calls by this number</a></td>";
             echo "<tr>";
         }
     ?>
