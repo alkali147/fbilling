@@ -372,8 +372,8 @@ $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
     <th colspan=2><?php echo _("Action"); ?></th>
     <?php
         foreach ($search_results as $cdr) {
-            $dst_url = fbilling_build_url("test","dst=$cdr[dst]");
-            $src_url = fbilling_build_url("test","src=$cdr[src]");
+            $dst_url = fbilling_build_url("test","dst=$cdr[dst]&dst_match=true");
+            $src_url = fbilling_build_url("test","src=$cdr[src]&src_match=true");
             echo "<tr>";
             echo "<td><a href=/admin/config.php?display=extensions&extdisplay=$cdr[src]>$cdr[src]<a/></td>";
             echo "<td>$cdr[alias]</td>";

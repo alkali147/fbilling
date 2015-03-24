@@ -139,6 +139,7 @@ function fbilling_configpageload() {
     $extension_refill = !$extension_data['refill'] ? '0' : $extension_data['refill'];
     $extension_refill_value = !$extension_data['refill_value'] ? '0' : $extension_data['refill_value'];
     $extension_address = $astman->database_get("SIP","Registry"."/$extdisplay");
+    $extension_activity_url = $dst_url = fbilling_build_url("test","src=$extdisplay&src_match=true");
     if ($ext==='') {
         $extdisplay = $extn;
     } else {
@@ -156,6 +157,7 @@ function fbilling_configpageload() {
         $currentcomponent->addguielem($section, new gui_textbox('fbilling_refill_value', $extension_refill_value, _('Refill Value'), _("If Refill set to Yes, every time refill script is executed, extensions credit will be set to this value"), "", "", false,0,''));
         $currentcomponent->addguielem($section, new gui_textbox('fbilling_alias', "$fbilling_alias", _('Alias'), _("Name shown in FBilling Reports"), "", "", false,0,''));
         $currentcomponent->addguielem($section, new gui_link('fbilling_account_phone', 'Go to phone web inetrface', "http://$extension_address[0]"));
+        $currentcomponent->addguielem($section, new gui_link('fbilling_account_activity', 'Extension Activity', $extension_activity_url));
     }
 }
 
@@ -340,7 +342,7 @@ function fbilling_get_csv_file($cat,$sql) {
     return $filename;
 }
 
-
+# TODO actually process array 
 // generates url according to requested parameteres
 // requires array of GET parameters and baseurl
 // returns url
