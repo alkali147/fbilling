@@ -35,57 +35,56 @@ include "shared.php";
 if ($action == 'list' or !$action) { // startif (action list)
 ?>
     <form method='GET' name='search_prefixes'>
-    	<table class='fbilling'>
-    		<th width='10%'>Filter</th>
-    		<th width='20%'>Value</th>
-    		<th width='10%'>Action</th>
-    		<tr>
-    			<td><?php echo _("Prefix"); ?></td>
-    			<td><input type'text' name='prefix' tabindex="<?php echo ++$tabindex;?>" value=<?php echo $_REQUEST['prefix']; ?> ></td>
-    		</tr>
-    		<tr>
-    			<td><?php echo _("Weight"); ?></td>
-    			<td>
-    				<select name='prefix_weight_id' tabindex="<?php echo ++$tabindex;?>">
-    					<option value='all'><?php echo _("All"); ?></option>
-    					<?php
-    						foreach ($weight_list as $weight) {
-    							if ($_REQUEST['prefix_weight_id'] == $weight['id']) {
-    								echo "<option selected value=$weight[id]>$weight[name]</option>";
-    							} else {
-    								echo "<option value=$weight[id]>$weight[name]</option>";
-    							}
-                                
-                            }
-    					?>
-    				</selct>
-    			</td>
-    				<input type='hidden' name='display' value='fbilling_admin'>
-    				<input type='hidden' name='cat' value='prefixes'>
-    				<td><input type='submit' tabindex="<?php echo ++$tabindex;?>" name='export' value='Export'></td>
-    		</tr>
-    		<tr>
-    			<td><?php echo _("Active"); ?></td>
-    			<td>
-    				<select name='prefix_is_active' tabindex="<?php echo ++$tabindex;?>">
-    					<option value='all'><?php echo _("All"); ?></option>
-    					<?php
-    						foreach ($active_list as $active) {
-    							if ($_REQUEST['prefix_is_active'] == $active['id']) {
-    								echo "<option selected value=$active[id]>$active[name]</option>";
-    							} else {
-    								echo "<option value=$active[id]>$active[name]</option>";
-    							}
+        <table class='fbilling'>
+            <th width='10%'>Filter</th>
+            <th width='20%'>Value</th>
+            <th width='10%'>Action</th>
+            <tr>
+                <td><?php echo _("Prefix"); ?></td>
+                <td><input type'text' name='prefix' tabindex="<?php echo ++$tabindex;?>" value=<?php echo $_REQUEST['prefix']; ?> ></td>
+            </tr>
+            <tr>
+                <td><?php echo _("Weight"); ?></td>
+                <td>
+                    <select name='prefix_weight_id' tabindex="<?php echo ++$tabindex;?>">
+                        <option value='all'><?php echo _("All"); ?></option>
+                        <?php
+                            foreach ($weight_list as $weight) {
+                                if ($_REQUEST['prefix_weight_id'] == $weight['id']) {
+                                    echo "<option selected value=$weight[id]>$weight[name]</option>";
+                                } else {
+                                    echo "<option value=$weight[id]>$weight[name]</option>";
+                                }
                             }
                         ?>
-    				</select>
-    			</td> 
-    			<input type='hidden' name='display' value='fbilling_admin'>
-    			<input type='hidden' name='cat' value='prefixes'>
-    			<input type='hidden' name='action' value='list'>
-    			<td><input type='submit' tabindex="<?php echo ++$tabindex;?>" value='Search'></td>
-    		</tr>
-    	</table>
+                    </selct>
+                </td>
+                    <input type='hidden' name='display' value='fbilling_admin'>
+                    <input type='hidden' name='cat' value='prefixes'>
+                    <td><input type='submit' tabindex="<?php echo ++$tabindex;?>" name='export' value='Export'></td>
+            </tr>
+            <tr>
+                <td><?php echo _("Active"); ?></td>
+                <td>
+                    <select name='prefix_is_active' tabindex="<?php echo ++$tabindex;?>">
+                        <option value='all'><?php echo _("All"); ?></option>
+                        <?php
+                            foreach ($active_list as $active) {
+                                if ($_REQUEST['prefix_is_active'] == $active['id']) {
+                                    echo "<option selected value=$active[id]>$active[name]</option>";
+                                } else {
+                                    echo "<option value=$active[id]>$active[name]</option>";
+                                }
+                            }
+                        ?>
+                    </select>
+                </td> 
+                <input type='hidden' name='display' value='fbilling_admin'>
+                <input type='hidden' name='cat' value='prefixes'>
+                <input type='hidden' name='action' value='list'>
+                <td><input type='submit' tabindex="<?php echo ++$tabindex;?>" value='Search'></td>
+            </tr>
+        </table>
     </form>
     <h5><?php echo _("Search Results"); ?></h5><hr>
 
@@ -111,25 +110,25 @@ if ($action == 'list' or !$action) { // startif (action list)
 
 
     <table class='fbilling'>
-    	<th><?php echo _("Prefix"); ?></th>
-    	<th><?php echo _("Country"); ?></th>
-    	<th><?php echo _("Description"); ?></th>
-    	<th><?php echo _("Weight"); ?></th>
-    	<th><?php echo _("Enabled"); ?></th>
-    	<th><?php echo _("Action"); ?></th>
-    	<?php
-    		foreach ($search_results as $prefix) {
-    			echo "<tr class=\"record\">
+        <th><?php echo _("Prefix"); ?></th>
+        <th><?php echo _("Country"); ?></th>
+        <th><?php echo _("Description"); ?></th>
+        <th><?php echo _("Weight"); ?></th>
+        <th><?php echo _("Enabled"); ?></th>
+        <th><?php echo _("Action"); ?></th>
+        <?php
+            foreach ($search_results as $prefix) {
+                echo "<tr class=\"record\">
                         <td>".$prefix['pref']."</td>
                         <td>".$prefix['country']."</td>
                         <td>".$prefix['description']."</td>
-                        <td>".$prefix['weight_name']."</td>
-                        <td>".$prefix['is_active']."</td>
-                        <td width='20%'><a href=/admin/config.php?display=fbilling_admin&cat=prefixes&action=edit&id=$prefix[id]>Edit Prefix</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href=/admin/config.php?display=fbilling_admin&cat=tariffs&action=add&prefix_id=$prefix[id]>Add Tariff</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href=/admin/config.php?display=fbilling_admin&cat=prefixes&action=delete&prefix_id=$prefix[id]>Delete Prefix</a></td>
+                        <td>".$prefix['weight_name']."</td>";
+                        if ($prefix['is_active'] == '1') {echo "<td>Yes</td>";} else {echo "<td>No</td>";} //<td>".$prefix['is_active']."</td>
+                        echo "<td width='20%'><a href=/admin/config.php?display=fbilling_admin&cat=prefixes&action=edit&id=$prefix[id]>Edit Prefix</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href=/admin/config.php?display=fbilling_admin&cat=tariffs&action=add&prefix_id=$prefix[id]>Add Tariff</a>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a href=/admin/config.php?display=fbilling_admin&cat=prefixes&action=delete&prefix_id=$prefix[id]>Delete Prefix</a></td>
                     </tr>
                 ";
-    		}
-    	?>
+            }
+        ?>
     </table>
     <hr>
 
@@ -151,9 +150,9 @@ if ($action == 'list' or !$action) { // startif (action list)
 
 
 elseif ($action == 'add' or $action == 'edit') { // startif (action add/edit) 
-	if ($action == 'edit') {
-		$prefix_data = fbilling_get_data_by_id($cat,$id);
-	}
+    if ($action == 'edit') {
+        $prefix_data = fbilling_get_data_by_id($cat,$id);
+    }
 ?>
     <form name='prefix_form' method='GET' onsubmit='return check_prefix_form();'>
         <table>
@@ -200,23 +199,23 @@ elseif ($action == 'add' or $action == 'edit') { // startif (action add/edit)
                 </td>
             </tr>
             <tr>
-            	<td>
+                <td>
                     <a href='#' class='info'><?php echo _("Weight"); ?><span><?php echo _("Assign weight to this prefix"); ?></span></a></td>
                 </td>
-            	<td>
-    			<select name='prefix_weight_id' tabindex="<?php echo ++$tabindex;?>">
-    				<?php
-    					foreach ($weight_list as $weight) {
-    						if ($prefix_data['weight_id'] == $weight['id']) {
-    							echo "<option selected value=$weight[id]>$weight[name]</option>";
-    						} else {
-    							echo "<option value=$weight[id]>$weight[name]</option>";
-    						}
+                <td>
+                <select name='prefix_weight_id' tabindex="<?php echo ++$tabindex;?>">
+                    <?php
+                        foreach ($weight_list as $weight) {
+                            if ($prefix_data['weight_id'] == $weight['id']) {
+                                echo "<option selected value=$weight[id]>$weight[name]</option>";
+                            } else {
+                                echo "<option value=$weight[id]>$weight[name]</option>";
+                            }
                             
                         }
-    				?>
-    			</selct>
-    		</td>
+                    ?>
+                </selct>
+            </td>
             </tr>
         </table>
         <input type='hidden' name='display' value=<?php echo $display; ?>>
@@ -232,8 +231,8 @@ elseif ($action == 'add' or $action == 'edit') { // startif (action add/edit)
 
 
     elseif ($action == 'conf_add') {
-    	$insert_ok = fbilling_check_if_exists($cat,'pref',$prefix);
-    	if ($insert_ok > 0) { // if there is prefix with requested name. exit
+        $insert_ok = fbilling_check_if_exists($cat,'pref',$prefix);
+        if ($insert_ok > 0) { // if there is prefix with requested name. exit
             echo "Prefix with specified pattern already exists in database, please use different pattern, or edit existing one.<br />";
             echo "<a href='javascript:history.go(-1)''>Go Back</a>";
             return true;
@@ -245,7 +244,7 @@ elseif ($action == 'add' or $action == 'edit') { // startif (action add/edit)
     }
 
     elseif ($action == 'conf_edit') {
-    	$insert_ok = fbilling_check_if_exists($cat,'pref',$prefix); // get number of tenants with same name 
+        $insert_ok = fbilling_check_if_exists($cat,'pref',$prefix); // get number of tenants with same name 
         if ($insert_ok > 0) { // if there is prefix with requested name check whether it's not prefix we are editing
             $prefix_data = fbilling_get_data_by_id($cat,$id);
             if ($prefix_data['pref'] == $prefix) {
