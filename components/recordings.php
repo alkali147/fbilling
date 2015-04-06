@@ -33,6 +33,16 @@ recordings.php - Reponsible for managing recordings associated with each hangup 
 include "shared.php";
 
 
+// get list of recordings and draw rnav
+// of course we could name this files cause.php, and whole section whould be cause management, which would be, em, not pretty
+// anyways above can be done bit later
 
+$component_list = fbilling_get_list('causes');
+	echo "<div class='rnav'><ul>";
+	echo "<li class='current'><a href=/admin/config.php?display=$display&cat=$cat&action=add>Add $fbilling_strings[$cat]</a></li>";
+	foreach ($component_list as $component) {
+	    echo "<li class='current'><a href=/admin/config.php?display=$display&cat=$cat&action=edit&id=$component[id]>$component[name]</a></li>";
+	}
+	echo "</ul></div>";
 
 ?>
