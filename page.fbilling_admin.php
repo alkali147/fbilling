@@ -119,6 +119,14 @@ $active_list = array(
                 <input type="submit" name="button" class="button" value="Manage Trunks" tabindex=<?php echo ++$tabindex; ?>>
             </form>
         </td>
+        <td>
+            <form method='GET' name='fbilling_administration'>
+                <input type='hidden' name='display' value='fbilling_admin'>
+                <input type='hidden' name='cat' value='recordings'>
+                <input type='hidden' name='action' value='list'>
+                <input type="submit" name="button" class="button" value="Manage Recordings" tabindex=<?php echo ++$tabindex; ?>>
+            </form>
+        </td>
     </tr>
 <table>
 
