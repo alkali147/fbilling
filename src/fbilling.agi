@@ -97,6 +97,7 @@ my $call_cost;
 my $full_call_cost;                         # TODO merge this two?
 my $dialstring;
 my $cdr;
+my $recording_filename;
 ## end variable declaration
 
 
@@ -218,6 +219,7 @@ if ($account_details{'tenant_is_active'} == 1) {
         9,                                      # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename('9',$uniqueid);
     $agi->hangup;
     exit 0;
 }
@@ -342,6 +344,7 @@ if ($tariff{"tariff_id"} == 0) {
         4,                                      # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename('4',$uniqueid);
     $agi->hangup;
     exit 0;
 } else {
