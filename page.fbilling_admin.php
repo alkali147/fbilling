@@ -63,7 +63,7 @@ $active_list = array(
     array("id" => "0","name" => "No"),
     array("id" => "1","name" => "Yes"),
 );
-
+$recording_id = isset($_REQUEST['recording_id'])?$_REQUEST['recording_id']:'';
 
 ?>
 

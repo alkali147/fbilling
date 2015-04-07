@@ -47,7 +47,6 @@ $recording_list = recordings_list();
 
 if ($action == 'edit') { // start edit cause
 	$cause_data = fbilling_get_data_by_id('causes',$id);
-
 ?>
 
 <form name='cause' method='GET'>
@@ -65,11 +64,15 @@ if ($action == 'edit') { // start edit cause
                 <a href='#' class='info'><?php echo _("Recording"); ?><span><?php echo _("Select Recording that will be played back when this cause is hit"); ?></span></a></td>
             </td>
         	<td>
-        		<select name='recording' tabindex="<?php echo ++$tabindex;?>">
+        		<select name='recording_id' tabindex="<?php echo ++$tabindex;?>">
     				<option selected value="0"><?php echo _("None"); ?></option>
     				<?php
     					foreach ($recording_list as $rec) {
-    						echo "<option value=$rec[id]>$rec[displayname]</option>";
+                            if ($cause_data['recording_id'] == $rec['id']) {
+                                echo "<option selected value=$rec[id]>$rec[displayname]</option>";
+                            } else {
+                                echo "<option value=$rec[id]>$rec[displayname]</option>";
+                            }
     					}
     				?>
     			</select>
@@ -84,4 +87,10 @@ if ($action == 'edit') { // start edit cause
 </form>
 <?php
 } // end edit cause
+
+
+if ($action == 'conf_edit') {
+    $fields = "recording_id = $recording_id";
+    fbilling_edit('causes',$fields,$id);  
+}
 ?>
