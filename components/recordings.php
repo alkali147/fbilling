@@ -91,6 +91,7 @@ if ($action == 'edit') { // start edit cause
 
 if ($action == 'conf_edit') {
     $fields = "recording_id = $recording_id";
-    fbilling_edit('causes',$fields,$id);  
+    fbilling_edit('causes',$fields,$id);
+    redirect_standard('cat');
 }
 ?>
