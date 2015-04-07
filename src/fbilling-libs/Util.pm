@@ -126,4 +126,25 @@ sub manipulate_dialstring {
 }
 
 
+# get recording filename for specified hangup cause
+# requires cause_id
+# returns filename to play
+sub get_recording_filename {
+    my $cause_id = $_[0];
+    my $uniqueid = $_[1];
+    my $recording_filename;
+    my $query_get_recording = "SELECT displayname FROM recordings WHERE id = (SELECT recording_id FROM billing_causes WHERE cause_id = $cause_id)";
+    &log("NOTICE",$uniqueid,"Executing query to get recording filename: $query_get_recording");
+    my $sth_get_recording = $dbh->prepare($query_get_recording);
+    $sth_get_recording->execute;
+    my @row_get_recording = $sth_get_recording->fetchrow_array;
+    if (scalar @row_get_recording == 0) {
+        $recording_filename = '0';
+    } else {
+        $recording_filename = $row_get_prefix[0], 
+    }
+    return $recording_filename;
+}
+
+
 1;
