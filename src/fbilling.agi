@@ -222,7 +222,6 @@ if ($account_details{'tenant_is_active'} == 1) {
         $account_details{'account_server_id'}   # server_id
     );
     $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
-    Util::log("Notice",$uniqueid,"Playing message to extension...");
     if ($recording_filename ne '0') {
         Util::log("Notice",$uniqueid,"Playing message to extension...");
         $agi->control_stream_file($recording_filename,"test");
@@ -255,6 +254,11 @@ if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, 
             $hangup_cause,                          # cause_id
             $account_details{'account_server_id'}   # server_id
         );
+        $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+        if ($recording_filename ne '0') {
+            Util::log("Notice",$uniqueid,"Playing message to extension...");
+            $agi->control_stream_file($recording_filename,"test");
+        };
         $agi->hangup;
         exit 0;
     } else {
@@ -288,6 +292,11 @@ if ($prefix{'prefix_id'} == 0) {
         $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit 0;
 } else {
@@ -323,6 +332,11 @@ if ($prefix{"is_active"} == 0) {
         $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit 0;
 } else {
@@ -406,6 +420,11 @@ if ($permission_details{'permission_id'} == 0) {
         $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit 0;
 } else {
@@ -439,6 +458,11 @@ if ($permission_details{'permission_is_active'} == 0) {
         $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit 0;
 } else {
@@ -469,6 +493,11 @@ if ($permission_ok == 0) {
         $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit 0;
 } else {
@@ -503,6 +532,11 @@ if ($max_duration[0] < 60) {
         $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit 0;
 } else {
@@ -531,6 +565,11 @@ if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'
         $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit 0;
 } else {
@@ -561,6 +600,11 @@ if ($trunk{"trunk_id"} == 0) {
         $account_details{'account_server_id'}   # server_id
     );
     Util::log("ERROR",$uniqueid,"Trunk not found for this tariff. Exitting...");
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit;
 } else {
