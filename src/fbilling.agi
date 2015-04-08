@@ -98,6 +98,7 @@ my $full_call_cost;                         # TODO merge this two?
 my $dialstring;
 my $cdr;
 my $recording_filename;
+my $hangup_cause;
 ## end variable declaration
 
 
@@ -201,6 +202,7 @@ if ($account_details{'tenant_id'} == 0 or $account_details{'tenant_id'} == '') {
 if ($account_details{'tenant_is_active'} == 1) {
     Util::log("NOTICE",$uniqueid,"This tenant is active, proceeding...");
 } else {
+    $hangup_cause = 9;
     Util::log("ERROR",$uniqueid,"This tenant is not active. Exitting...");
     $cdr->insert(
         $did,                                   # src
@@ -216,10 +218,10 @@ if ($account_details{'tenant_is_active'} == 1) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        9,                                      # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
-    $recording_filename = Util::get_recording_filename('9',$uniqueid);
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
     $agi->hangup;
     exit 0;
 }
@@ -229,6 +231,7 @@ if ($account_details{'tenant_is_active'} == 1) {
 if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, check if account has sufficient credit
     Util::log("NOTICE",$uniqueid,"There is limit set on this account, proceeding...");
     if ($account_details{'account_credit'} <= 0) {
+        $hangup_cause = 2;
         Util::log("ERROR",$uniqueid,"Account has no sufficient credit. Exitting...");
         $cdr->insert(
             $did,                                   # src
@@ -244,7 +247,7 @@ if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, 
             0,                                      # total cost
             $account_details{'tenant_id'},          # tenant_id
             $uniqueid,                              # uniqueid
-            2,                                      # cause_id
+            $hangup_cause,                          # cause_id
             $account_details{'account_server_id'}   # server_id
         );
         $agi->hangup;
@@ -261,9 +264,8 @@ if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, 
 Util::log("NOTICE",$uniqueid,"Getting prfix information...");
 %prefix = $destination->get_prefix($uniqueid);
 if ($prefix{'prefix_id'} == 0) {
+    $hangup_cause = 3;
     Util::log("ERROR",$uniqueid,"Prefix does not exist. Exitting...");
-    ##TODO maybe set hangup_cause globally?
-    ## TODO insert failed cdr here
     $cdr->insert(
         $did,                                   # src
         $cid,                                   # dst
@@ -278,7 +280,7 @@ if ($prefix{'prefix_id'} == 0) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        3,                                      # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
     $agi->hangup;
@@ -297,6 +299,7 @@ Util::log("NOTICE",$uniqueid,"Prefix is active: $prefix{'is_active'}");
 
 # check if prefix is active
 if ($prefix{"is_active"} == 0) {
+    $hangup_cause = 10;
     Util::log("ERROR",$uniqueid,"Prefix is not active. Exitting...");
     $cdr->insert(
         $did,                                   # src
@@ -312,7 +315,7 @@ if ($prefix{"is_active"} == 0) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        10,                                     # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
     $agi->hangup;
@@ -326,6 +329,7 @@ if ($prefix{"is_active"} == 0) {
 Util::log("NOTICE",$uniqueid,"Getting tariff information...");
 %tariff = $destination->get_tariff($account_details{'tenant_id'},$prefix{'prefix_id'},$uniqueid);
 if ($tariff{"tariff_id"} == 0) {
+    $hangup_cause = 4;
     Util::log("ERROR",$uniqueid,"Tariff does not exist. Exitting...");
     $cdr->insert(
         $did,                                   # src
@@ -341,10 +345,10 @@ if ($tariff{"tariff_id"} == 0) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        4,                                      # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
-    $recording_filename = Util::get_recording_filename('4',$uniqueid);
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
     $agi->hangup;
     exit 0;
 } else {
@@ -378,6 +382,7 @@ $call = Call->new(
 Util::log("NOTICE",$uniqueid,"Getting permission information...");
 my %permission_details = $call->get_permission_details($uniqueid);
 if ($permission_details{'permission_id'} == 0) {
+    $hangup_cause = 11;
     Util::log("ERROR",$uniqueid,"Permission does not exist, or is not set up correctly. Exitting...");
     $cdr->insert(
         $did,                                   # src
@@ -393,7 +398,7 @@ if ($permission_details{'permission_id'} == 0) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        11,                                     # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
     $agi->hangup;
@@ -410,6 +415,7 @@ Util::log("NOTICE",$uniqueid,"Permission is active: $permission_details{'permiss
 
 # check if permission is active
 if ($permission_details{'permission_is_active'} == 0) {
+    $hangup_cause = 12;
     Util::log("ERROR",$uniqueid,"Permission is not active. Exitting...");
     $cdr->insert(
         $did,                                   # src
@@ -425,7 +431,7 @@ if ($permission_details{'permission_is_active'} == 0) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        12,                                     # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
     $agi->hangup;
@@ -439,6 +445,7 @@ if ($permission_details{'permission_is_active'} == 0) {
 my $permission_ok = $call->get_permission($uniqueid);
 Util::log("NOTICE",$uniqueid,"Permission for this call is: $permission_ok");
 if ($permission_ok == 0) {
+    $hangup_cause = 5;
     Util::log("ERROR",$uniqueid,"Account has no permission to call this prefix. Exitting...");
     $cdr->insert(
         $did,                                   # src
@@ -454,7 +461,7 @@ if ($permission_ok == 0) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        5,                                      # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
     $agi->hangup;
@@ -472,6 +479,7 @@ Util::log("NOTICE",$uniqueid,"CALL INITIALISATION PHASE ========================
 @max_duration = $call->max_duration($uniqueid);
 Util::log("NOTICE",$uniqueid,"Maximum duration for this call is: $max_duration[0]");
 if ($max_duration[0] < 60) {
+    $hangup_cause = 6;
     Util::log("ERROR",$uniqueid,"Minimum duration of call is less than 60 seconds. Exitting...");
     $cdr->insert(
         $did,                                   # src
@@ -487,7 +495,7 @@ if ($max_duration[0] < 60) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        6,                                      # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
     $agi->hangup;
@@ -499,6 +507,7 @@ if ($max_duration[0] < 60) {
 
 # check if initial cost for tariff is less than account credit
 if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'} > $account_details{'account_credit'}) {
+    $hangup_cause = 8;
     Util::log("ERROR",$uniqueid,"Initial cost of this tariff is more than account credit. Exitting...");
     $cdr->insert(
         $did,                                   # src
@@ -514,7 +523,7 @@ if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        8,                                      # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
     $agi->hangup;
@@ -528,6 +537,7 @@ if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'
 Util::log("NOTICE",$uniqueid,"Getting trunk information...");
 %trunk = $destination->get_trunk($tariff{'tariff_id'},$uniqueid);       # TODO do we need this?
 if ($trunk{"trunk_id"} == 0) {
+    $hangup_cause = 7;
     $cdr->insert(
         $did,                                   # src
         $cid,                                   # dst
@@ -542,7 +552,7 @@ if ($trunk{"trunk_id"} == 0) {
         0,                                      # total cost
         $account_details{'tenant_id'},          # tenant_id
         $uniqueid,                              # uniqueid
-        7,                                      # cause_id
+        $hangup_cause,                          # cause_id
         $account_details{'account_server_id'}   # server_id
     );
     Util::log("ERROR",$uniqueid,"Trunk not found for this tariff. Exitting...");
@@ -563,6 +573,7 @@ Util::log("NOTICE",$uniqueid,"Trunk remove_prefix ID is: $trunk{'remove_prefix'}
 
 
 # insert CDR for ongoing initialised call
+$hangup_cause = 33;                         # ID 33 is for ongoing calls
 $cdr->insert(
     $did,                                   # src
     $cid,                                   # dst
@@ -577,7 +588,7 @@ $cdr->insert(
     0,                                      # total cost
     $account_details{'tenant_id'},          # tenant_id
     $uniqueid,                              # uniqueid
-    33,                                     # cause_id / ID 33 is for ongoing calls
+    $hangup_cause,                          # cause_id
     $account_details{'account_server_id'}   # server_id
 );
 
@@ -616,7 +627,7 @@ if ($account_details{'account_use_limit'} == 1) {
 # once call is passed to asterisk and finished, update CDR for initialised call
 switch ($disposition) {
     case 'ANSWER' {
-        $cdr->update($uniqueid,$billsec,$call_cost,"90");
+        $cdr->update($uniqueid,$billsec,$call_cost,"90"); # no need to assign to variables
     }
     case 'BUSY' {
         $cdr->update($uniqueid,$billsec,$call_cost,"91");
