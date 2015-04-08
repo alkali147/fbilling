@@ -133,7 +133,7 @@ sub get_recording_filename {
     my $cause_id = $_[0];
     my $uniqueid = $_[1];
     my $recording_filename;
-    my $query_get_recording = "SELECT displayname FROM recordings WHERE id = (SELECT recording_id FROM billing_causes WHERE id = $cause_id)";
+    my $query_get_recording = "SELECT filename FROM recordings WHERE id = (SELECT recording_id FROM billing_causes WHERE id = $cause_id)";
     &log("NOTICE",$uniqueid,"Executing query to get recording filename: $query_get_recording");
     my $sth_get_recording = $dbh->prepare($query_get_recording);
     $sth_get_recording->execute;
