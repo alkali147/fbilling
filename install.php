@@ -42,6 +42,7 @@ echo _("installing fbilling tables...");
 $queries[] = "CREATE TABLE IF NOT EXISTS `billing_causes` (
   `id` int(11) NOT NULL,
   `name` varchar(45) DEFAULT NULL,
+  `recording_id` int(11),
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 ";
