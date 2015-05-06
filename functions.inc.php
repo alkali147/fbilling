@@ -147,7 +147,8 @@ function fbilling_configpageload() {
     $extension_refill = !$extension_data['refill'] ? '0' : $extension_data['refill'];
     $extension_refill_value = !$extension_data['refill_value'] ? '0' : $extension_data['refill_value'];
     $extension_address = $astman->database_get("SIP","Registry"."/$extdisplay");
-    $extension_activity_url = $dst_url = fbilling_build_url("test","src=$extdisplay&src_match=true");
+    $extension_activity_url = $dst_url = fbilling_build_url("display=fbilling_reports&cat=detailed_search&action=search&day_start=01&","src=$extdisplay&src_match=true");
+    $extension_gen_invoice_url = fbilling_build_url("display=fbilling_reports&cat=generate_invoice&","$src=$extdisplay");
     if ($ext==='') {
         $extdisplay = $extn;
     } else {
@@ -166,7 +167,7 @@ function fbilling_configpageload() {
         $currentcomponent->addguielem($section, new gui_textbox('fbilling_alias', "$fbilling_alias", _('Alias'), _("Name shown in FBilling Reports"), "", "", false,0,''));
         $currentcomponent->addguielem($section, new gui_link_new_tab('fbilling_account_phone', 'Go to phone web inetrface', "http://$extension_address[0]"));
         $currentcomponent->addguielem($section, new gui_link_new_tab('fbilling_account_activity', 'Extension activity', $extension_activity_url));
-        $currentcomponent->addguielem($section, new gui_link_new_tab('fbilling_gen_invoice', 'Generate invoice', "http://google.com"));
+        $currentcomponent->addguielem($section, new gui_link_new_tab('fbilling_gen_invoice', 'Generate invoice', $extension_gen_invoice_url));
     }
 }
 
@@ -356,7 +357,8 @@ function fbilling_get_csv_file($cat,$sql) {
 // requires array of GET parameters and baseurl
 // returns url
 function fbilling_build_url($baseurl,$parameters) {
-    $url = "/admin/config.php?display=fbilling_reports&cat=detailed_search&action=search&day_start=01&";
+    $url = "/admin/config.php?";
+    $url .= $baseurl;
     $url .= $parameters;
     return $url;
 }
