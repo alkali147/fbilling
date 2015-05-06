@@ -34,6 +34,14 @@ if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
 
 global $db;
 
+## since provided gui_link opens in current window/tab we have to do this so some of our links will be open in new tab
+class gui_link_new_tab extends guitext {
+    function gui_link_new_tab($elemname, $text, $url, $userlang = true) {
+        $parent_class = get_parent_class($this);
+        parent::$parent_class($elemname, $text);
+        $this->html_text = "<a href=\"$url\" target=\"_blank\" id =\"$this->elemname\">$text</a>";
+    }
+}
 
 #############################################
 
@@ -156,8 +164,9 @@ function fbilling_configpageload() {
         $currentcomponent->addguielem($section, new gui_selectbox('fbilling_refill', $currentcomponent->getoptlist('fbilling_refill'), $extension_refill, _('Refill'), _("If set to Yes, every time refill script is executed, extensions credit will be topped up to value set in Refill Value field"),false,""));
         $currentcomponent->addguielem($section, new gui_textbox('fbilling_refill_value', $extension_refill_value, _('Refill Value'), _("If Refill set to Yes, every time refill script is executed, extensions credit will be set to this value"), "", "", false,0,''));
         $currentcomponent->addguielem($section, new gui_textbox('fbilling_alias', "$fbilling_alias", _('Alias'), _("Name shown in FBilling Reports"), "", "", false,0,''));
-        $currentcomponent->addguielem($section, new gui_link('fbilling_account_phone', 'Go to phone web inetrface', "http://$extension_address[0]"));
-        $currentcomponent->addguielem($section, new gui_link('fbilling_account_activity', 'Extension Activity', $extension_activity_url));
+        $currentcomponent->addguielem($section, new gui_link_new_tab('fbilling_account_phone', 'Go to phone web inetrface', "http://$extension_address[0]"));
+        $currentcomponent->addguielem($section, new gui_link_new_tab('fbilling_account_activity', 'Extension activity', $extension_activity_url));
+        $currentcomponent->addguielem($section, new gui_link_new_tab('fbilling_gen_invoice', 'Generate invoice', "http://google.com"));
     }
 }
 
