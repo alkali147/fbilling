@@ -148,7 +148,7 @@ function fbilling_configpageload() {
     $extension_refill_value = !$extension_data['refill_value'] ? '0' : $extension_data['refill_value'];
     $extension_address = $astman->database_get("SIP","Registry"."/$extdisplay");
     $extension_activity_url = $dst_url = fbilling_build_url("display=fbilling_reports&cat=detailed_search&action=search&day_start=01&","src=$extdisplay&src_match=true");
-    $extension_gen_invoice_url = fbilling_build_url("display=fbilling_reports&cat=generate_invoice&","$src=$extdisplay");
+    $extension_gen_invoice_url = fbilling_build_url("display=fbilling_reports&cat=generate_invoice&","src=$extdisplay");
     if ($ext==='') {
         $extdisplay = $extn;
     } else {
