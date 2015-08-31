@@ -824,15 +824,41 @@ if ($cat == "generate_invoice") {
 </form>
 <?php
     if ($action == 'gen') {
+        // prepare fpdf stuff
+        require_once('libs/fpdf/fpdf.php');
+        $header_widths = array(40,60,25,25);
+        $headers = array("Called Number","Call Date","Duration","Total Cost");
+        class PDF extends FPDF {
+            function generate_invoice($search_results,$headers,$header_widths) {
+
+                // create headers
+                for ($i=0; $i < count($headers); $i++) {
+                    $this->Cell($header_widths[$i],7,$headers[$i],1,0,'C');
+                }
+                $this->Ln();
+                foreach ($search_results as $cdr) {
+                    $this->Cell($header_widths[0],6,$cdr[dst],'LR');
+                    $this->Cell($header_widths[1],6,$cdr[calldate],'LR');
+                    $this->Cell($header_widths[2],6,$cdr[billsec],'LR');
+                    $this->Cell($header_widths[3],6,$cdr[total_cost],'LR');
+                    $this->Ln();
+                }
+                $this->Cell(array_sum($header_widths),0,'','T');
+            }
+        }
+        // get data for invoice
         $sql = "SELECT src,dst,calldate,billsec,total_cost FROM billing_cdr WHERE ";
         $sql .= "calldate > '$calldate_start' AND calldate < '$calldate_end' AND ";
         $sql .= "src = '$src' ";
         $sql .= "ORDER BY calldate ASC";
         $search_results = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
         echo "here we are going to display download link";
-        foreach ($search_results as $s) {
-            echo $s[src]."<br />";
-        }
+        // generate pdf
+        $pdf = new PDF();
+        $pdf->SetFont('Arial','',12);
+        $pdf->AddPage();
+        $pdf->generate_invoice($search_results,$headers,$header_widths);
+        $pdf->Output('/var/www/html/fbilling_data/demo1.pdf','F');
     }
 }
 // end gemerate invoice
