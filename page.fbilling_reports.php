@@ -93,6 +93,14 @@ $offset = $page == 1 ? 0 : $page * 20 - 20;
                 <input type="submit" tabindex="<?php echo ++$tabindex;?>" name="report_type_label" value="Reports By Tenant" />
             </form>
         </td>
+        <td>
+            <form method="GET" name="detailed_search">
+                <input type="hidden" name="display" value="fbilling_reports">
+                <input type="hidden" name="action" value="search">
+                <input type="hidden" name="cat" value="generate_invoice">
+                <input type="submit" tabindex="<?php echo ++$tabindex;?>" name="report_type_label" value="Generate Invoices" />
+            </form>
+        </td>
     </tr>
 </table>
 
@@ -681,6 +689,13 @@ if ($cat == "generate_invoice") {
     <th><?php echo _("Value"); ?></th>
     <th><?php echo _("Action"); ?></th>
     <tr>
+        <td><?php echo _("Extension"); ?></td>
+        <td>
+            <input type'text' name='src' tabindex="<?php echo ++$tabindex;?>" value=<?php echo $_REQUEST['src']; ?> >
+        </td>
+        <td></td>
+    </tr>
+    <tr>
         <td><?php echo _("Start Date"); ?></td>
         <td> 
             <select name="year_start" id="year_start">
@@ -847,18 +862,22 @@ if ($cat == "generate_invoice") {
             }
         }
         // get data for invoice
-        $sql = "SELECT src,dst,calldate,billsec,total_cost FROM billing_cdr WHERE ";
+        $sql = "SELECT dst,calldate,billsec,total_cost FROM billing_cdr WHERE ";
         $sql .= "calldate > '$calldate_start' AND calldate < '$calldate_end' AND ";
         $sql .= "src = '$src' ";
         $sql .= "ORDER BY calldate ASC";
         $search_results = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
-        echo "here we are going to display download link";
-        // generate pdf
-        $pdf = new PDF();
-        $pdf->SetFont('Arial','',12);
-        $pdf->AddPage();
-        $pdf->generate_invoice($search_results,$headers,$header_widths);
-        $pdf->Output('/var/www/html/fbilling_data/demo1.pdf','F');
+        if (count($search_results) == 0) { // no need to generate empty invoice...
+            echo _("Extension had no calls for selected period of time, nothing to generate...");
+        } else {
+            // generate pdf
+            echo _("here we are going to display download link");
+            $pdf = new PDF();
+            $pdf->SetFont('Arial','',12);
+            $pdf->AddPage();
+            $pdf->generate_invoice($search_results,$headers,$header_widths);
+            $pdf->Output('/var/www/html/fbilling_data/demo1.pdf','F');
+        }
     }
 }
 // end gemerate invoice
