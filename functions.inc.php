@@ -363,5 +363,27 @@ function fbilling_build_url($baseurl,$parameters) {
     return $url;
 }
 
+// pdf related
+require_once('libs/fpdf/fpdf.php');
+class PDF extends FPDF {
+    function generate_invoice($search_results) {
+        $header_widths = array(40,60,25,25);
+        $headers = array("Called Number","Call Date","Duration","Total Cost");
+        // create headers
+        for ($i=0; $i < count($headers); $i++) {
+            $this->Cell($header_widths[$i],7,$headers[$i],1,0,'C');
+        }
+        $this->Ln();
+        foreach ($search_results as $cdr) {
+            $this->Cell($header_widths[0],6,$cdr[dst],'LR');
+            $this->Cell($header_widths[1],6,$cdr[calldate],'LR');
+            $this->Cell($header_widths[2],6,$cdr[billsec],'LR');
+            $this->Cell($header_widths[3],6,$cdr[total_cost],'LR');
+            $this->Ln();
+        }
+        $this->Cell(array_sum($header_widths),0,'','T');
+    }
+}
+
 
 ?>

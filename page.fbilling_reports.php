@@ -363,6 +363,7 @@ if ($_REQUEST['export'] == 'Export') { // if user hit export button generate csv
 }
 $sql_body_main .= " ORDER BY calldate DESC LIMIT 20 OFFSET $offset";
 $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
+echo $sql_body_main;
 // if export button was hit show download link
 ?>
 <h5><?php echo _("Search Results"); echo "&nbsp"; if ($_REQUEST['export'] == 'Export') {echo "<a href=/fbilling_data/$csv_file_url>Download CSV file</a>";} ?></h5>
@@ -832,7 +833,6 @@ if ($cat == "generate_invoice") {
     <tr>
         <input type='hidden' name='display' value='fbilling_reports'>
         <input type='hidden' name='cat' value='generate_invoice'>
-        <input type='hidden' name='src' value=<?php echo "$src"; ?>>
         <input type='hidden' name='action' value='gen'>
     </tr>
 </table>
@@ -840,27 +840,6 @@ if ($cat == "generate_invoice") {
 <?php
     if ($action == 'gen') {
         // prepare fpdf stuff
-        require_once('libs/fpdf/fpdf.php');
-        $header_widths = array(40,60,25,25);
-        $headers = array("Called Number","Call Date","Duration","Total Cost");
-        class PDF extends FPDF {
-            function generate_invoice($search_results,$headers,$header_widths) {
-
-                // create headers
-                for ($i=0; $i < count($headers); $i++) {
-                    $this->Cell($header_widths[$i],7,$headers[$i],1,0,'C');
-                }
-                $this->Ln();
-                foreach ($search_results as $cdr) {
-                    $this->Cell($header_widths[0],6,$cdr[dst],'LR');
-                    $this->Cell($header_widths[1],6,$cdr[calldate],'LR');
-                    $this->Cell($header_widths[2],6,$cdr[billsec],'LR');
-                    $this->Cell($header_widths[3],6,$cdr[total_cost],'LR');
-                    $this->Ln();
-                }
-                $this->Cell(array_sum($header_widths),0,'','T');
-            }
-        }
         // get data for invoice
         $sql = "SELECT dst,calldate,billsec,total_cost FROM billing_cdr WHERE ";
         $sql .= "calldate > '$calldate_start' AND calldate < '$calldate_end' AND ";
@@ -875,7 +854,7 @@ if ($cat == "generate_invoice") {
             $pdf = new PDF();
             $pdf->SetFont('Arial','',12);
             $pdf->AddPage();
-            $pdf->generate_invoice($search_results,$headers,$header_widths);
+            $pdf->generate_invoice($search_results);
             $pdf->Output('/var/www/html/fbilling_data/demo1.pdf','F');
         }
     }
