@@ -44,7 +44,51 @@ DIRECTORIES=(
 	/var/lib/asterisk/agi-bin/fbilling-libs
 )
 
+FILES=(
+	uninstall.php
+	README.md
+	page.fbilling_reports.php
+	page.fbilling_admin.php
+	module.xml
+	LICENSE
+	install.php
+	functions.inc.php
+	upgrade/sql-0.9.6_to_0.9.7.sql
+	src/fbilling.agi
+	src/fbilling.conf
+	src/fbilling_prefixes_TEMPLATE.csv
+	src/fbilling_tariffs_TEMPLATE.csv
+	src/fbilling-libs/Account.pm
+	src/fbilling-libs/Call.pm
+	src/fbilling-libs/CDR.pm
+	src/fbilling-libs/Destination.pm
+	src/fbilling-libs/Util.pm
+	src/fbilling-libs/utils/refill.pl
+	libs/fpdf/fpdf.php
+	libs/fpdf/license.txt
+	components/permissions.php
+	components/prefixes.php
+	components/recordings.php
+	components/shared.php
+	components/tariffs.php
+	components/tenants.php
+	components/trunks.php
+	components/weights.php
+	assets/css/fbilling.css
+	/var/lib/asterisk/agi-bin/fbilling-libs/Account.pm
+	/var/lib/asterisk/agi-bin/fbilling-libs/Call.pm
+	/var/lib/asterisk/agi-bin/fbilling-libs/CDR.pm
+	/var/lib/asterisk/agi-bin/fbilling-libs/Destination.pm
+	/var/lib/asterisk/agi-bin/fbilling-libs/Util.pm
+	/var/lib/asterisk/agi-bin/fbilling-libs/utils/refill.pl
+	/var/lib/asterisk/agi-bin/fbilling.agi
+	/var/www/html/fbilling_data/fbilling_prefixes_TEMPLATE.csv
+	/var/www/html/fbilling_data/fbilling_tariffs_TEMPLATE.csv
+	/etc/asterisk/fbilling.conf
+)
+
 VERSION=`cat module.xml | grep -A 1 "<name>FBilling" | grep -v name | tr -d "version" | tr -d "<" | tr -d ">" | tr -d "/"`
+OWNER='asterisk'
 echo "Welcome to FBilling version" $VERSION"..."
 echo "Verifying installation..."
 echo "Checking for directories..."
@@ -53,7 +97,38 @@ for i in "${DIRECTORIES[@]}"
 do
 	if [ -d $i ]; then
 		echo "[OK]		Found directory $i"
+		if [ $OWNER == `stat --format '%U' $i` ]; then
+			if [ $OWNER == `stat --format '%G' $i` ]; then
+				echo "[OK]		Correct owners for directory $i"
+			else
+				echo "[FAILED]	Correct owners for directory $i"
+			fi
+		else
+			echo "[FAILED]	Correct owners for directory $i"
+		fi
 	else
 		echo "[FAILED]	Found directory $i"
+	fi
+done
+
+sleep 1
+echo "Checking for files..."
+sleep 1
+
+for i in "${FILES[@]}"
+do
+	if [ -f $i ]; then
+		echo "[OK]		Found file $i"
+		if [ $OWNER == `stat --format '%U' $i` ]; then
+			if [ $OWNER == `stat --format '%G' $i` ]; then
+				echo "[OK]		Correct owners for file $i"
+			else
+				echo "[FAILED]	Correct owners for file $i"
+			fi
+		else
+			echo "[FAILED]	Correct owners for file $i"
+		fi
+	else
+		echo "[FAILED]	Found file $i"
 	fi
 done
