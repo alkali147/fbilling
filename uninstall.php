@@ -37,7 +37,7 @@ global $db;
 echo "Removing fbilling tables...<br />";
 
 
-$tables = array('billing_causes','billing_cdr','billing_extensions','billing_permissions','billing_permission_weights','billing_tariffs','billing_prefixes','billing_tenants','billing_trunks','billing_weights');
+$tables = array('billing_causes','billing_cdr','billing_extensions','billing_permissions','billing_permission_weights','billing_tariffs','billing_prefixes','billing_tenants','billing_trunks','billing_weights','billing_invoices');
 foreach ($tables as $t) {
 	$result = $db->query("DROP TABLE $t");
 	if (DB::IsError($check)) {

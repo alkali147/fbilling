@@ -363,7 +363,6 @@ if ($_REQUEST['export'] == 'Export') { // if user hit export button generate csv
 }
 $sql_body_main .= " ORDER BY calldate DESC LIMIT 20 OFFSET $offset";
 $search_results = sql($sql_body_main,'getAll',DB_FETCHMODE_ASSOC);
-echo $sql_body_main;
 // if export button was hit show download link
 ?>
 <h5><?php echo _("Search Results"); echo "&nbsp"; if ($_REQUEST['export'] == 'Export') {echo "<a href=/fbilling_data/$csv_file_url>Download CSV file</a>";} ?></h5>
