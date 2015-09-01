@@ -386,8 +386,10 @@ class PDF extends FPDF {
 }
 
 function fbilling_generate_invoice ($src,$search_results) {
+    $extension_id = fbilling_get_data_by_field("extensions","id","sip_num",$src);
     $invoice_dir = "/var/www/html/fbilling_data/invoices/";
     $stamp = time();
+    $creation_date = date("Y-m-d H:i:s");
     $invoice_file = "inv_".$src."_".$stamp.".pdf";
     $filename = $invoice_dir.$invoice_file;
     $pdf = new PDF();
@@ -397,6 +399,10 @@ function fbilling_generate_invoice ($src,$search_results) {
     $pdf->Ln();
     $pdf->generate_table($search_results);
     $pdf->Output($filename,'F');
+    // insert into invoice table
+    $fields = array("extension_id","creation_date","filename");
+    $values = array($extension_id[0][0],$creation_date,$invoice_file);
+    fbilling_add("invoices",$fields,$values);
     return $invoice_file;
 }
 ?>
