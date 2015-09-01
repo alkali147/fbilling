@@ -174,6 +174,15 @@ $queries[] = "CREATE TABLE IF NOT EXISTS `billing_weights` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 ";
 
+$queries[] = "CREATE TABLE IF NOT EXISTS `billing_invoices` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `extension_id` int(11) NOT NULL,
+  `creation_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `filename` varchar(256) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+";
+
 
 foreach ($queries as $sql) {
   $resuult = $db->query($sql);
