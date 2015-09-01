@@ -87,8 +87,12 @@ FILES=(
 	/etc/asterisk/fbilling.conf
 )
 
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NATIVE='\033[0m'
 VERSION=`cat module.xml | grep -A 1 "<name>FBilling" | grep -v name | tr -d "version" | tr -d "<" | tr -d ">" | tr -d "/"`
 OWNER='asterisk'
+ERRCOUNT=0
 echo "Welcome to FBilling version" $VERSION"..."
 echo "Verifying installation..."
 echo "Checking for directories..."
@@ -96,18 +100,21 @@ sleep 1
 for i in "${DIRECTORIES[@]}"
 do
 	if [ -d $i ]; then
-		echo "[OK]		Found directory $i"
+		printf "${GREEN}[OK]${NATIVE}		Found directory $i\n"
 		if [ $OWNER == `stat --format '%U' $i` ]; then
 			if [ $OWNER == `stat --format '%G' $i` ]; then
-				echo "[OK]		Correct owners for directory $i"
+				printf "${GREEN}[OK]${NATIVE}		Correct owners for directory $i\n"
 			else
-				echo "[FAILED]	Correct owners for directory $i"
+				printf "${RED}[FAILED]${NATIVE}	Correct owners for directory $i\n"
+				ERRCOUNT=`expr $ERRCOUNT+1`
 			fi
 		else
-			echo "[FAILED]	Correct owners for directory $i"
+			printf "${RED}[FAILED]${NATIVE}	Correct owners for directory $i\n"
+			ERRCOUNT=`expr $ERRCOUNT+1`
 		fi
 	else
-		echo "[FAILED]	Found directory $i"
+		printf "${RED}[FAILED]${NATIVE}	Found directory $i\n"
+		ERRCOUNT=`expr $ERRCOUNT+1`
 	fi
 done
 
@@ -118,17 +125,28 @@ sleep 1
 for i in "${FILES[@]}"
 do
 	if [ -f $i ]; then
-		echo "[OK]		Found file $i"
+		printf "${GREEN}[OK]${NATIVE}		Found file $i\n"
 		if [ $OWNER == `stat --format '%U' $i` ]; then
 			if [ $OWNER == `stat --format '%G' $i` ]; then
-				echo "[OK]		Correct owners for file $i"
+				printf "${GREEN}[OK]${NATIVE}		Correct owners for file $i\n"
 			else
-				echo "[FAILED]	Correct owners for file $i"
+				printf "${RED}[FAILED]${NATIVE}	Correct owners for file $i\n"
+				ERRCOUNT=`expr $ERRCOUNT+1`
 			fi
 		else
-			echo "[FAILED]	Correct owners for file $i"
+			printf "${RED}[FAILED]${NATIVE}	Correct owners for file $i\n"
+			ERRCOUNT=`expr $ERRCOUNT+1`
 		fi
 	else
-		echo "[FAILED]	Found file $i"
+		printf "${RED}[FAILED]${NATIVE}	Correct owners for file $i\n"
+		ERRCOUNT=`expr $ERRCOUNT+1`
 	fi
 done
+
+sleep 1
+
+if [ $ERRCOUNT != 0 ]; then
+	echo "There are some errors with this installation, check that all files are present and permissions are correct. Exitting..."
+else
+	echo "Installation seems successfull. Exitting..."
+fi
