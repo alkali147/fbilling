@@ -202,6 +202,7 @@ shell_exec('cp -r /var/www/html/admin/modules/fbilling/src/fbilling.agi /var/lib
 shell_exec('cp -r /var/www/html/admin/modules/fbilling/src/fbilling.conf /etc/asterisk/');
 shell_exec('touch /var/log/asterisk/fbilling.log');
 shell_exec('mkdir /var/www/html/fbilling_data');
+shell_exec('mkdir /var/www/html/fbilling_data/invoices');
 shell_exec('cp /var/www/html/admin/modules/fbilling/src/fbilling_prefixes_TEMPLATE.csv /var/www/html/fbilling_data');
 shell_exec('cp /var/www/html/admin/modules/fbilling/src/fbilling_tariffs_TEMPLATE.csv /var/www/html/fbilling_data');
 

@@ -850,12 +850,9 @@ if ($cat == "generate_invoice") {
             echo _("Extension had no calls for selected period of time, nothing to generate...");
         } else {
             // generate pdf
-            echo _("here we are going to display download link");
-            $pdf = new PDF();
-            $pdf->SetFont('Arial','',12);
-            $pdf->AddPage();
-            $pdf->generate_invoice($search_results);
-            $pdf->Output('/var/www/html/fbilling_data/demo1.pdf','F');
+            echo _("here we are going to display download link<br />");
+            $invoice_file = fbilling_generate_invoice($src,$search_results);
+            echo $invoice_file;
         }
     }
 }

@@ -366,7 +366,7 @@ function fbilling_build_url($baseurl,$parameters) {
 // pdf related
 require_once('libs/fpdf/fpdf.php');
 class PDF extends FPDF {
-    function generate_invoice($search_results) {
+    function generate_table($search_results) {
         $header_widths = array(40,60,25,25);
         $headers = array("Called Number","Call Date","Duration","Total Cost");
         // create headers
@@ -385,5 +385,18 @@ class PDF extends FPDF {
     }
 }
 
-
+function fbilling_generate_invoice ($src,$search_results) {
+    $invoice_dir = "/var/www/html/fbilling_data/invoices/";
+    $stamp = time();
+    $invoice_file = "inv_".$src."_".$stamp.".pdf";
+    $filename = $invoice_dir.$invoice_file;
+    $pdf = new PDF();
+    $pdf->SetFont('Arial','',12);
+    $pdf->AddPage();
+    $pdf->Cell(40,10,"Invoice for extension $src");
+    $pdf->Ln();
+    $pdf->generate_table($search_results);
+    $pdf->Output($filename,'F');
+    return $invoice_file;
+}
 ?>
