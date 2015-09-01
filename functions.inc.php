@@ -370,7 +370,7 @@ class PDF extends FPDF {
         $header_widths = array(40,60,25,25);
         $headers = array("Called Number","Call Date","Duration","Total Cost");
         // create headers
-        for ($i=0; $i < count($headers); $i++) {
+        for ($i=0; $i < sizeof($headers); $i++) {
             $this->Cell($header_widths[$i],7,$headers[$i],1,0,'C');
         }
         $this->Ln();
@@ -386,12 +386,18 @@ class PDF extends FPDF {
 }
 
 function fbilling_generate_invoice ($src,$search_results) {
+    # filename related
     $extension_id = fbilling_get_data_by_field("extensions","id","sip_num",$src);
     $invoice_dir = "/var/www/html/fbilling_data/invoices/";
     $stamp = time();
     $creation_date = date("Y-m-d H:i:s");
     $invoice_file = "inv_".$src."_".$stamp.".pdf";
     $filename = $invoice_dir.$invoice_file;
+    # pagind related
+    $rows_per_page = 40;
+    $rows = sizeof($search_results);
+    $number_of_pages = ceil($rows / 40);
+    # generate pdf
     $pdf = new PDF();
     $pdf->SetFont('Arial','',12);
     $pdf->AddPage();
