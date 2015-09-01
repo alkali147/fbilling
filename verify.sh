@@ -150,3 +150,5 @@ if [ $ERRCOUNT != 0 ]; then
 else
 	echo "Installation seems successfull. Exitting..."
 fi
+
+# TODO add configuration file and mysql tables checking
