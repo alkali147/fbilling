@@ -363,6 +363,172 @@ function fbilling_build_url($baseurl,$parameters) {
     return $url;
 }
 
+// generate date pickers
+// requires nothing
+// returns html containing datepickers
+function fbilling_add_datepicker() {
+    $year_start = isset($_REQUEST['year_start'])?$_REQUEST['year_start']:date('Y');
+    $month_start = isset($_REQUEST['month_start'])?$_REQUEST['month_start']:date('m');
+    $day_start = isset($_REQUEST['day_start'])?$_REQUEST['day_start']:date('d');
+    $hour_start = isset($_REQUEST['hour_start'])?$_REQUEST['hour_start']:'00';
+    $minute_start = isset($_REQUEST['minute_start'])?$_REQUEST['minute_start']:'00';
+    $year_end = isset($_REQUEST['year_end'])?$_REQUEST['year_end']:date('Y');
+    $month_end = isset($_REQUEST['month_end'])?$_REQUEST['month_end']:date('m');
+    $day_end = isset($_REQUEST['day_end'])?$_REQUEST['day_end']:date('d');
+    $hour_end = isset($_REQUEST['hour_end'])?$_REQUEST['hour_end']:'23';
+    $minute_end = isset($_REQUEST['minute_end'])?$_REQUEST['minute_end']:'59';
+    $month_list = array(
+        '01' => 'January',
+        '02' => 'February',
+        '03' => 'March',
+        '04' => 'April',
+        '05' => 'May',
+        '06' => 'June',
+        '07' => 'July',
+        '08' => 'August',
+        '09' => 'September',
+        '10' => 'October',
+        '11' => 'November',
+        '12' => 'December'
+    );
+    ?>
+    <tr>
+        <td><?php echo _("Start Date"); ?></td>
+        <td> 
+            <select name="year_start" id="year_start">
+                <?php
+                    for ($y_start = 2007; $y_start <= date('Y'); $y_start++) {
+                        if ($year_start == $y_start) {
+                            echo "<option value='$y_start' selected='selected'>$y_start</option>";
+                        } else {
+                            echo "<option value='$y_start'>$y_start</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="month_start" id="month_start">
+                <?php
+                    foreach ($month_list as $i => $month) {
+                        if ($month_start == $i) {
+                            echo "<option value='$i' selected='selected'>$month</option>";
+                        } else {
+                            echo "<option value='$i'>$month</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="day_start" id="day_start">
+                <?php
+                    for ($d_start = 01; $d_start <= 31; $d_start++) {
+                        if ($day_start == $d_start) {
+                            if ($d_start < 10) {$d_start = '0'.$d_start;}
+                            echo "<option value=\"$d_start\" selected=\"selected\">$d_start</option>\n";
+                        } else {
+                            if ($d_start < 10) {$d_start = '0'.$d_start;}
+                            echo "<option value=\"$d_start\">$d_start</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="hour_start" id="hour_start">
+                <?php
+                    for ($h_start = 00; $h_start <= 23; $h_start++) {
+                        if ($hour_start == $h_start) {
+                            if ($h_start < 10) {$h_start = "0".$h_start;}
+                            echo "<option value=\"$h_start\" selected=\"selected\">$h_start</option>\n";
+                        } else {
+                            if ($h_start < 10) {$h_start = "0".$h_start;}
+                            echo "<option value=\"$h_start\">$h_start</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="minute_start" id="minute_start">
+                <?php
+                    for ($m_start = 00; $m_start <= 59; $m_start++) {
+                        if ($minute_start == $m_start) {
+                            if ($m_start < 10) {$m_start = "0".$m_start;}
+                            echo "<option value=\"$m_start\" selected=\"selected\">$m_start</option>\n";
+                        } else {
+                            if ($m_start < 10) {$m_start = "0".$m_start;}
+                            echo "<option value=\"$m_start\">$m_start</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+        </td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><?php echo _("End Date"); ?></td>
+        <td> 
+            <select name="year_end" id="year_end">
+                <?php
+                    for ($y_end = 2007; $y_end <= date('Y'); $y_end++) {
+                        if ($year_end == $y_end) {
+                            echo "<option value='$y_end' selected='selected'>$y_end</option>";
+                        } else {
+                            echo "<option value='$y_end'>$y_end</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="month_end" id="month_end">
+                <?php
+                    foreach ($month_list as $i => $month) {
+                        if ($month_end == $i) {
+                            echo "<option value='$i' selected='selected'>$month</option>";
+                        } else {
+                            echo "<option value='$i'>$month</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="day_end" id="day_end">
+                <?php
+                    for ($d_end = 01; $d_end <= 31; $d_end++) {
+                        if ($day_end == $d_end) {
+                            if ($d_end < 10) {$d_end = '0'.$d_end;}
+                            echo "<option value=\"$d_end\" selected=\"selected\">$d_end</option>\n";
+                        } else {
+                            if ($d_end < 10) {$d_end = '0'.$d_end;}
+                            echo "<option value=\"$d_end\">$d_end</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="hour_end" id="hour_end">
+                <?php
+                    for ($h_end = 00; $h_end <= 23; $h_end++) {
+                        if ($hour_end == $h_end) {
+                            if ($h_end < 10) {$h_end = "0".$h_end;}
+                            echo "<option value=\"$h_end\" selected=\"selected\">$h_end</option>\n";
+                        } else {
+                            if ($h_end < 10) {$h_end = "0".$h_end;}
+                            echo "<option value='$h_end'>$h_end</option>";
+                        }
+                    }
+                ?>
+            </select>
+            <select name="minute_end" id="minute_end">
+                <?php
+                    for ($m_end = 00; $m_end <= 59; $m_end++) {
+                        if ($minute_end == $m_end) {
+                            if ($m_end < 10) {$m_end = "0".$m_end;}
+                            echo "<option value=\"$m_end\" selected=\"selected\">$m_end</option>\n";
+                        } else {
+                            if ($m_end < 10) {$m_end = "0".$m_end;}
+                            echo "<option value=\"$m_end\">$m_end</option>\n";
+                        }
+                    }
+                ?>
+            </select>
+        </td>
+        <td></td>
+    </tr>
+    <?php
+}
+
 // pdf related
 require_once('libs/fpdf/fpdf.php');
 class PDF extends FPDF {
