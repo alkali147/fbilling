@@ -400,7 +400,7 @@ function fbilling_generate_invoice ($src,$search_results) {
     # generate pdf
     $pdf = new PDF();
     $pdf->SetFont('Arial','',12);
-    # fwarning, ugly things coming through!
+    # WARNING, ugly things coming through!
     # for PDF pagination, we loop through number of pages we have
     for ($page=0; $page < $number_of_pages; $page++) { 
         $pdf->AddPage();    # createnew page

@@ -38,6 +38,7 @@ if ($_REQUEST['src'] == '' or !$_REQUEST['src']) {$src = 'all';} else {$src = $_
 if ($_REQUEST['dst'] == '' or !$_REQUEST['dst']) {$dst = 'all';} else {$dst = $_REQUEST['dst'];}
 $src_match = isset($_REQUEST['src_match'])?$_REQUEST['src_match']:'false';
 $dst_match = isset($_REQUEST['dst_match'])?$_REQUEST['dst_match']:'false';
+$include_unanswered_calls = isset($_REQUEST['include_unanswered_calls'])?$_REQUEST['include_unanswered_calls']:'false';
 $year_start = isset($_REQUEST['year_start'])?$_REQUEST['year_start']:date('Y');
 $month_start = isset($_REQUEST['month_start'])?$_REQUEST['month_start']:date('m');
 $day_start = isset($_REQUEST['day_start'])?$_REQUEST['day_start']:date('d');
@@ -679,6 +680,7 @@ if ($_REQUEST['export'] == 'Export') { // if user hit export button generate csv
 // end reports by tenant
 }
 
+
 // start generate invoice
 if ($cat == "generate_invoice") {
 ?>
@@ -692,6 +694,7 @@ if ($cat == "generate_invoice") {
         <td><?php echo _("Extension"); ?></td>
         <td>
             <input type'text' name='src' tabindex="<?php echo ++$tabindex;?>" value=<?php echo $_REQUEST['src']; ?> >
+            <input type="checkbox" name="include_unanswered_calls" tabindex="<?php echo ++$tabindex;?>" value="true" <?php if ($include_unanswered_calls == 'true') {echo 'checked';} ?> ><?php echo _("Include unanswered calls"); ?><br>
         </td>
         <td></td>
     </tr>
@@ -843,6 +846,9 @@ if ($cat == "generate_invoice") {
         $sql = "SELECT dst,calldate,billsec,total_cost FROM billing_cdr WHERE ";
         $sql .= "calldate > '$calldate_start' AND calldate < '$calldate_end' AND ";
         $sql .= "src = '$src' ";
+        if ($include_unanswered_calls == 'false') {
+            $sql .= "and billsec > 0 ";
+        }
         $sql .= "ORDER BY calldate ASC";
         $search_results = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
         if (count($search_results) == 0) { // no need to generate empty invoice...
