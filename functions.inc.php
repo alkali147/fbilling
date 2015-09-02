@@ -532,7 +532,7 @@ function fbilling_add_datepicker() {
 // pdf related
 require_once('libs/fpdf/fpdf.php');
 class PDF extends FPDF {
-    function generate_table($search_results) {
+    function generate_table($search_results,$headers) {
         $header_widths = array(40,60,25,25);
         $headers = array("Called Number","Call Date","Duration","Total Cost");
         // create headers
@@ -544,14 +544,14 @@ class PDF extends FPDF {
             $this->Cell($header_widths[0],6,$cdr[dst],'LR');
             $this->Cell($header_widths[1],6,$cdr[calldate],'LR');
             $this->Cell($header_widths[2],6,$cdr[billsec],'LR');
-            $this->Cell($header_widths[3],6,$cdr[total_cost],'LR');
+            $this->Cell($header_widths[3],6,round($cdr[total_cost],3),'LR');
             $this->Ln();
         }
         $this->Cell(array_sum($header_widths),0,'','T');
     }
 }
 
-function fbilling_generate_invoice ($src,$search_results) {
+function fbilling_generate_invoice ($src,$search_results,$search_summary) {
     # filename related
     $extension_id = fbilling_get_data_by_field("extensions","id","sip_num",$src);
     $invoice_dir = "/var/www/html/fbilling_data/invoices/";
@@ -585,6 +585,26 @@ function fbilling_generate_invoice ($src,$search_results) {
         $pdf->Ln();
         $pdf->Cell(150,10,$page + 1,0,1,'C');
     }
+    # after pagination is done, create one last page with summary
+    $pdf->AddPage();
+    $pdf->SetFont('Arial','B',12);
+    $pdf->Cell(150,10,"Summary for this invoice",0,1,'C');
+    # create summary table
+    $pdf->Cell('90',0,'','T');
+    $pdf->Ln();
+    #$pdf->Cell('90',0,'','T');
+    $pdf->Cell('60',6,"Number of Calls",'LR');
+    $pdf->Cell('30',6,$search_summary['number_of_calls'],'LR');
+    $pdf->Ln();
+    #$pdf->Cell('90',0,'','T');
+    $pdf->Cell('60',6,"Total Duration of Calls",'LR');
+    $pdf->Cell('30',6,$search_summary['total_duration'],'LR');
+    $pdf->Ln();
+    #$pdf->Cell('90',0,'','T');
+    $pdf->Cell('60',6,"Total Cost",'LR');
+    $pdf->Cell('30',6,round($search_summary['total_cost'],3),'LR');
+    $pdf->Ln();
+    $pdf->Cell('90',0,'','T');
     $pdf->Output($filename,'F');
     // insert into invoice table
     $fields = array("extension_id","creation_date","filename");

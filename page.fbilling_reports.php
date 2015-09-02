@@ -447,7 +447,7 @@ if ($cat == "generate_invoice") {
                 echo _("Extension had no calls for selected period of time, nothing to generate...");
             } else {
                 // generate pdf
-                $invoice_file = fbilling_generate_invoice($src,$search_results);
+                $invoice_file = fbilling_generate_invoice($src,$search_results,$search_summary);
                 echo "<a href=/fbilling_data/invoices/$invoice_file>Download Invoice file</a>";
             }
         }
