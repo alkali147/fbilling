@@ -405,14 +405,19 @@ function fbilling_generate_invoice ($src,$search_results) {
     for ($page=0; $page < $number_of_pages; $page++) { 
         $pdf->AddPage();    # createnew page
         if ($page == 0) {   # we need PDF header on first page
-            $pdf->Cell(40,10,"Invoice for extension $src");
+            $pdf->Cell(150,10,"Invoice for extension $src",0,1,'C');
         } else {
-            $pdf->Cell(40,10,"Continued from page $page");
+            $pdf->SetFont('Arial','B',10);
+            $pdf->Cell(150,10,"Continued from page $page",0,1,'C');
         }
         $pdf->Ln();
         # since we need pagination, we'd rather slice array then run several queries...
-        $page_rows = array_chunk($search_results, 40);
+        $pdf->SetFont('Arial','',12);
+        $page_rows = array_chunk($search_results, 38);
         $pdf->generate_table($page_rows[$page]);
+        $pdf->SetFont('Arial','B',8);
+        $pdf->Ln();
+        $pdf->Cell(150,10,$page + 1,0,1,'C');
     }
     $pdf->Output($filename,'F');
     // insert into invoice table
