@@ -58,20 +58,6 @@ $weight_id = isset($_REQUEST['weight_id'])?$_REQUEST['weight_id']:'all';
 $cause_list = fbilling_get_list('causes');
 $tenant_list = fbilling_get_list('tenants');
 $weight_list = fbilling_get_list('weights');
-$month_list = array(
-    '01' => 'January',
-    '02' => 'February',
-    '03' => 'March',
-    '04' => 'April',
-    '05' => 'May',
-    '06' => 'June',
-    '07' => 'July',
-    '08' => 'August',
-    '09' => 'September',
-    '10' => 'October',
-    '11' => 'November',
-    '12' => 'December'
-);
 $offset = $page == 1 ? 0 : $page * 20 - 20;
 ?>
 
@@ -442,22 +428,28 @@ if ($cat == "generate_invoice") {
 </form>
 <?php
     if ($action == 'gen') {
-        // prepare fpdf stuff
         // get data for invoice
-        $sql = "SELECT dst,calldate,billsec,total_cost FROM billing_cdr WHERE ";
-        $sql .= "calldate > '$calldate_start' AND calldate < '$calldate_end' AND ";
-        $sql .= "src = '$src' ";
+        $sql_body = "SELECT dst,calldate,billsec,total_cost FROM billing_cdr WHERE ";
+        $sql_body_summary = "SELECT COUNT(*) AS number_of_calls, SUM(billsec) AS total_duration, SUM(total_cost) AS total_cost from billing_cdr WHERE ";
+        $sql_where = "calldate > '$calldate_start' AND calldate < '$calldate_end' AND src = $src ";
         if ($include_unanswered_calls == 'false') {
-            $sql .= "and billsec > 0 ";
+            $sql_where .= "and billsec > 0 ";
         }
-        $sql .= "ORDER BY calldate ASC";
-        $search_results = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
-        if (count($search_results) == 0) { // no need to generate empty invoice...
-            echo _("Extension had no calls for selected period of time, nothing to generate...");
+        $sql_where .= "ORDER BY calldate ASC";
+        $sql_search = $sql_body.$sql_where;
+        $sql_summary = $sql_body_summary.$sql_where;
+        if ($src == 'all') {
+            echo _("Please specify extension you wish to generate invoice for...")."<br />";
         } else {
-            // generate pdf
-            $invoice_file = fbilling_generate_invoice($src,$search_results);
-            echo "<a href=/fbilling_data/invoices/$invoice_file>Download Invoice file</a>";
+            $search_results = sql($sql_search, 'getAll', DB_FETCHMODE_ASSOC);
+            $search_summary = sql($sql_summary, 'getRow', DB_FETCHMODE_ASSOC);
+            if (count($search_results) == 0) { // no need to generate empty invoice...
+                echo _("Extension had no calls for selected period of time, nothing to generate...");
+            } else {
+                // generate pdf
+                $invoice_file = fbilling_generate_invoice($src,$search_results);
+                echo "<a href=/fbilling_data/invoices/$invoice_file>Download Invoice file</a>";
+            }
         }
     }
 }
