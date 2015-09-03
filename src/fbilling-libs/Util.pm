@@ -107,7 +107,11 @@ sub manipulate_dialstring {
     chomp $remove_prefix;
     my $uniqueid = $_[3];
     my $destination_dial;
-    if (!$remove_prefix) {
+    if ($remove_prefix == hex 0) {
+        &log("NOTICE",$uniqueid,"Stripping digits $remove_prefix from destination number $did");
+        $destination_dial = `echo $did | sed 's/^$remove_prefix//' | tr -d '\n'`;
+        &log("NOTICE",$uniqueid,"Destination number after stripping digits is: $destination_dial");
+    } elsif (!$remove_prefix) {
         &log("NOTICE",$uniqueid,"No digits to strip from destination number $did");
         $destination_dial = $did;
     } else {
@@ -115,7 +119,10 @@ sub manipulate_dialstring {
         $destination_dial = `echo $did | sed 's/^$remove_prefix//' | tr -d '\n'`;
         &log("NOTICE",$uniqueid,"Destination number after stripping digits is: $destination_dial");
     }
-    if (!$add_prefix) {
+    if ($add_prefix == hex 0) {
+        &log("NOTICE",$uniqueid,"Adding digits $add_prefix to destination number $destination_dial");
+        $destination_dial = $add_prefix.$destination_dial;
+    } elsif (!$add_prefix) {
         &log("NOTICE",$uniqueid,"No digits to add to destination number $destination_dial");
     } else {
         &log("NOTICE",$uniqueid,"Adding digits $add_prefix to destination number $destination_dial");
