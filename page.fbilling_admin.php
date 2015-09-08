@@ -131,7 +131,7 @@ $recording_id = isset($_REQUEST['recording_id'])?$_REQUEST['recording_id']:'';
 <table>
 
 <?php
-$allowed_categories = array("tenants","weights","permissions","prefixes","traffis","trunks","recordings");
+$allowed_categories = array("tenants","weights","permissions","prefixes","tariffs","trunks","recordings");
 if (in_array($cat, $allowed_categories)) {
     $include = "components/$cat".".php";
     include "$include";
