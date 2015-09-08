@@ -219,6 +219,14 @@ function fbilling_get_data_by_id($cat,$id) {
     return $data;
 }
 
+# get all or requested fields and all rows from tables
+# requires (category_name)
+# returns associative array containing the requested fields
+function fbilling_get_all($cat,$fields) {
+    $sql = "SELECT $fields FROM billing_$cat WHERE 1";
+    $data = sql($sql, 'getAll');
+    return $data;
+}
 
 # same as fbilling_get_data_by_field
 # requires component name, fields to select, field to filter by and value

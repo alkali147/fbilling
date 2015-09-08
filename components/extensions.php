@@ -31,6 +31,38 @@ tenants.php - Responsible for tenant management
 
 include "shared.php";
 
+// start overview
+if ($action == 'overview') {
+	?>
+	<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=import&button=Manage+Extensions>Import Extensions</a><br />
+	<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Delete Extensions</a><br />
+	<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Update Extensions</a><br />
+	<?php
+}
+// end overview
 
+// start import
+if ($action == 'import') {
+	echo "Import Extensions<br />";
+	// get all extensions that exist in FreePBX but not in FBilling
+	$sql = "SELECT extension,name FROM users WHERE users.extension NOT IN (SELECT sip_num FROM billing_extensions)";
+	$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
+	if (sizeof($extensions) == 0) {
+		echo _("All extensions seem to be present in FBilling...");
+	} else {
+		foreach ($extensions as $extension) {
+		?>
+			<form name='extension_form' method='GET' onsubmit='return check_extension_form();'>			
+				<table>
+					<tr>
+						<td><input type="checkbox" name="extension" value=<?php echo $extension['extension'] ?> > <?php echo $extension['name'] ?>
+					</tr>
+				</table>
+			</form>
+		<?php
+		}
+	}
 
+}
+// end import
 ?>
