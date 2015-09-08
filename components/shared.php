@@ -30,7 +30,7 @@ shared.php - Set of functions/code not belonging anywhere otherwise
 
 
 echo "<h5>Manage $cat</h5>";
-if ($cat != 'prefixes' and $cat != 'tariffs' and $cat != 'recordings') {	// we need to display rnav in every component page except prefixes and tariffs and recordings
+if ($cat != 'prefixes' and $cat != 'tariffs' and $cat != 'recordings' and $cat != 'extensions') {	// we need to display rnav in every component page except prefixes and tariffs and recordings and extensions
 	$component_list = fbilling_get_list($cat);
 	echo "<div class='rnav'><ul>";
 	echo "<li class='current'><a href=/admin/config.php?display=$display&cat=$cat&action=add>Add $fbilling_strings[$cat]</a></li>";

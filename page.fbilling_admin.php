@@ -127,16 +127,24 @@ $recording_id = isset($_REQUEST['recording_id'])?$_REQUEST['recording_id']:'';
                 <input type="submit" name="button" class="button" value="Manage Recordings" tabindex=<?php echo ++$tabindex; ?>>
             </form>
         </td>
+        <td>
+            <form method='GET' name='fbilling_administration'>
+                <input type='hidden' name='display' value='fbilling_admin'>
+                <input type='hidden' name='cat' value='extensions'>
+                <input type='hidden' name='action' value='overview'>
+                <input type="submit" name="button" class="button" value="Manage Extensions" tabindex=<?php echo ++$tabindex; ?>>
+            </form>
+        </td>
     </tr>
 <table>
 
 <?php
-$allowed_categories = array("tenants","weights","permissions","prefixes","tariffs","trunks","recordings");
+$allowed_categories = array("tenants","weights","permissions","prefixes","tariffs","trunks","recordings",'extensions');
 if (in_array($cat, $allowed_categories)) {
     $include = "components/$cat".".php";
     include "$include";
 } else {
-    echo "Something went wrond, try again...<br />";
+    echo _("Something went wrong, try again...")."<br />";
 }
 
 ?>
