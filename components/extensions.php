@@ -45,10 +45,11 @@ if ($action == 'overview') {
 if ($action == 'import') {
 	echo "Import Extensions<br />";
 	// get all extensions that exist in FreePBX but not in FBilling
+	// get all extensions for paging purposes
 	$sql = "SELECT extension,name FROM users WHERE users.extension NOT IN (SELECT sip_num FROM billing_extensions)";
-	echo $sql;
 	$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
 	$number_of_pages = ceil(sizeof($extensions) / 20);
+	//get only results that we will display on single page
 	$sql .= " LIMIT 20 OFFSET $offset";
 	$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
 	if (sizeof($extensions) == 0) {
@@ -57,7 +58,77 @@ if ($action == 'import') {
 		$tenant_list = fbilling_get_list('tenants');
 		$permission_list = fbilling_get_list('permissions');
 		?>
-		<form name='extension_form' method='GET' onsubmit='return check_extension_form();'>		
+		<form name='extension_form' method='GET' onsubmit='return check_extension_form();'>
+			<table class="fbilling">
+				<th><?php echo _("Value"); ?></th>
+				<th><?php echo _("Data"); ?></th>
+				<tr>
+	                <td>
+	                    <a href='#' class='info'><?php echo _("Tenant"); ?><span><?php echo _("Tnenat to which imported extensions will be associated"); ?></span></a></td>
+	                </td>
+	                <td>
+	                    <select name='tenant_id' tabindex="<?php echo ++$tabindex;?>" >
+	                        <option selected value='none'><?php echo _("Select"); ?></option>"
+		                    <?php
+		                        foreach ($tenant_list as $tenant) {
+		                        	echo "<option value=$tenant[id]>$tenant[name]</option>";
+		                        }
+		                    ?>
+		                </select>
+	                </td>
+	            </tr>
+	            <tr>
+	                <td>
+	                    <a href='#' class='info'><?php echo _("Permission"); ?><span><?php echo _("Permission which imported extensions will have"); ?></span></a></td>
+	                </td>
+	                <td>
+	                    <select name='permission_id' tabindex="<?php echo ++$tabindex;?>" >
+	                        <option selected value='none'><?php echo _("Select"); ?></option>"
+	                    <?php
+	                        foreach ($permission_list as $permission) {
+	                        	echo "<option value=$permission[id]>$permission[name]</option>";
+	                        }
+	                    ?>
+	                </select>
+	                </td>
+	            </tr>
+	            <tr>
+                	<td>
+                    	<a href='#' class='info'><?php echo _("Refill"); ?><span><?php echo _("Refill balance for imported extensions?"); ?></span></a></td>
+	                </td>
+	                <td>
+	                    <select name='refill' tabindex="<?php echo ++$tabindex;?>">
+	                    <?php
+	                        foreach ($active_list as $refill) {
+	                                echo "<option value=$refill[id]>$refill[name]</option>";
+	                        }
+	                    ?>
+	                    </select>
+	                </td>
+	            </tr>
+	            <tr>
+                	<td>
+                    	<a href='#' class='info'><?php echo _("Use Limit"); ?><span><?php echo _("Allow unlimited calling for imported extensions?"); ?></span></a></td>
+	                </td>
+	                <td>
+	                    <select name='use_limit' tabindex="<?php echo ++$tabindex;?>">
+	                    <?php
+	                        foreach ($active_list as $use_limit) {
+	                                echo "<option value=$use_limit[id]>$use_limit[name]</option>";
+	                        }
+	                    ?>
+	                    </select>
+	                </td>
+	            </tr>
+	            <tr>
+	                <td>
+	                    <a href='#' class='info'><?php echo _("Initial Balance"); ?><span><?php echo _("Balance that imported extensions will have"); ?></span></a></td>
+	                </td>
+	                <td>
+	                    <input type='text' name='balance' tabindex="<?php echo ++$tabindex;?>">
+	                </td>
+	            </tr>
+			</table>
 			<table class="fbilling">
 				<th width='10%'><input type="checkbox" onClick="toggle(this)" /> <?php echo _("Import all"); ?></th>
 				<th width='10%'><?php echo _("Extension"); ?></th>
