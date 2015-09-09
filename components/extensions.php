@@ -34,9 +34,9 @@ include "shared.php";
 // start overview
 if ($action == 'overview') {
 	?>
-	<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=import&button=Manage+Extensions>Import Extensions</a><br />
-	<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Delete Extensions</a><br />
-	<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Update Extensions</a><br />
+	<a class="fbilling" href=/admin/config.php?display=fbilling_admin&cat=extensions&action=import&button=Manage+Extensions><?php echo _("Import Extensions"); ?> </a><br />
+	<!--<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Delete Extensions</a><br />
+	<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Update Extensions</a><br /> -->
 	<?php
 }
 // end overview
@@ -44,13 +44,12 @@ if ($action == 'overview') {
 // start import
 if ($action == 'import') {
 	if ($_REQUEST['config'] != 'apply') {
-		echo "Import Extensions<br />";
+		echo "<h5>"._("Import Extensions")."</h5>";
 		// get all extensions that exist in FreePBX but not in FBilling
-		// get all extensions for paging purposes
 		$sql = "SELECT extension,name FROM users WHERE users.extension NOT IN (SELECT sip_num FROM billing_extensions)";
 		$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
 		if (sizeof($extensions) == 0) {
-			echo _("All extensions seem to be present in FBilling...");
+			echo "<h5>"._("All extensions seem to be present in FBilling...")."</h5>";
 		} else {
 			$tenant_list = fbilling_get_list('tenants');
 			$permission_list = fbilling_get_list('permissions');
@@ -62,7 +61,7 @@ if ($action == 'import') {
 					<th><?php echo _("Action"); ?></th>
 					<tr>
 		                <td>
-		                    <a href='#' class='info'><?php echo _("Tenant"); ?><span><?php echo _("Tnenat to which imported extensions will be associated"); ?></span></a></td>
+		                    <a href='#' class='info'><?php echo _("Tenant"); ?><span><?php echo _("Tenant to which imported extensions will be associated"); ?></span></a></td>
 		                </td>
 		                <td>
 		                    <select name='tenant_id' tabindex="<?php echo ++$tabindex;?>" >
@@ -143,9 +142,9 @@ if ($action == 'import') {
 		            </tr>
 				</table>
 				<table class="fbilling">
-					<th><?php echo _("Select extensions"); ?></th>
+					<th><?php echo _("Select"); ?></th>
 					<th><?php echo _("Action"); ?></th>
-					<th><?php echo _("Extensions to be imported"); ?></th>
+					<th><?php echo _("Import"); ?></th>
 					<tr>
 						<td>
 							<div>
@@ -182,7 +181,6 @@ if ($action == 'import') {
 		}
 	}
 	if ($_REQUEST['config'] == 'apply') {
-		//echo "Applying configuration changes";
 		foreach ($extension as $sip_num) {
 			$values .= "(\"$sip_num\",(SELECT users.name FROM users WHERE users.extension = $sip_num),\"$balance\",\"$refill_value\",\"$permission_id\",\"$tenant_id\",\"$refill\",\"$use_limit\"),";
 		}
@@ -193,7 +191,6 @@ if ($action == 'import') {
 		redirect_standard('cat');
 	}
 }
-
 // end import
 ?>
 
@@ -231,5 +228,4 @@ function check_extension_form() {
         }
     }
 }
-
 </script>
