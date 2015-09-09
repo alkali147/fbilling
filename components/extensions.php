@@ -25,7 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 This file is part of FBilling
-tenants.php - Responsible for tenant management
+extensions.php - Responsible for extension management
 */
 
 
@@ -43,114 +43,145 @@ if ($action == 'overview') {
 
 // start import
 if ($action == 'import') {
-	echo "Import Extensions<br />";
-	// get all extensions that exist in FreePBX but not in FBilling
-	// get all extensions for paging purposes
-	$sql = "SELECT extension,name FROM users WHERE users.extension NOT IN (SELECT sip_num FROM billing_extensions)";
-	$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
-	$number_of_pages = ceil(sizeof($extensions) / 20);
-	//get only results that we will display on single page
-	$sql .= " LIMIT 20 OFFSET $offset";
-	$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
-	if (sizeof($extensions) == 0) {
-		echo _("All extensions seem to be present in FBilling...");
-	} else {
-		$tenant_list = fbilling_get_list('tenants');
-		$permission_list = fbilling_get_list('permissions');
-		?>
-		<form name='extension_form' method='GET' onsubmit='return check_extension_form();'>
-			<table class="fbilling">
-				<th><?php echo _("Value"); ?></th>
-				<th><?php echo _("Data"); ?></th>
-				<tr>
-	                <td>
-	                    <a href='#' class='info'><?php echo _("Tenant"); ?><span><?php echo _("Tnenat to which imported extensions will be associated"); ?></span></a></td>
-	                </td>
-	                <td>
-	                    <select name='tenant_id' tabindex="<?php echo ++$tabindex;?>" >
-	                        <option selected value='none'><?php echo _("Select"); ?></option>"
+	if ($_REQUEST['config'] != 'apply') {
+		echo "Import Extensions<br />";
+		// get all extensions that exist in FreePBX but not in FBilling
+		// get all extensions for paging purposes
+		$sql = "SELECT extension,name FROM users WHERE users.extension NOT IN (SELECT sip_num FROM billing_extensions)";
+		$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
+		$number_of_pages = ceil(sizeof($extensions) / 20);
+		//get only results that we will display on single page
+		$sql .= " LIMIT 20 OFFSET $offset";
+		$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
+		if (sizeof($extensions) == 0) {
+			echo _("All extensions seem to be present in FBilling...");
+		} else {
+			$tenant_list = fbilling_get_list('tenants');
+			$permission_list = fbilling_get_list('permissions');
+			?>
+			<form name='extension_form' method='GET' onsubmit='return check_extension_form();'>
+				<table class="fbilling">
+					<th><?php echo _("Value"); ?></th>
+					<th><?php echo _("Data"); ?></th>
+					<th><?php echo _("Action"); ?></th>
+					<tr>
+		                <td>
+		                    <a href='#' class='info'><?php echo _("Tenant"); ?><span><?php echo _("Tnenat to which imported extensions will be associated"); ?></span></a></td>
+		                </td>
+		                <td>
+		                    <select name='tenant_id' tabindex="<?php echo ++$tabindex;?>" >
+		                        <option selected value='none'><?php echo _("Select"); ?></option>"
+			                    <?php
+			                        foreach ($tenant_list as $tenant) {
+			                        	echo "<option value=$tenant[id]>$tenant[name]</option>";
+			                        }
+			                    ?>
+			                </select>
+		                </td>
+		            </tr>
+		            <tr>
+		                <td>
+		                    <a href='#' class='info'><?php echo _("Permission"); ?><span><?php echo _("Permission which imported extensions will have"); ?></span></a></td>
+		                </td>
+		                <td>
+		                    <select name='permission_id' tabindex="<?php echo ++$tabindex;?>" >
+		                        <option selected value='none'><?php echo _("Select"); ?></option>"
 		                    <?php
-		                        foreach ($tenant_list as $tenant) {
-		                        	echo "<option value=$tenant[id]>$tenant[name]</option>";
+		                        foreach ($permission_list as $permission) {
+		                        	echo "<option value=$permission[id]>$permission[name]</option>";
 		                        }
 		                    ?>
 		                </select>
-	                </td>
-	            </tr>
-	            <tr>
-	                <td>
-	                    <a href='#' class='info'><?php echo _("Permission"); ?><span><?php echo _("Permission which imported extensions will have"); ?></span></a></td>
-	                </td>
-	                <td>
-	                    <select name='permission_id' tabindex="<?php echo ++$tabindex;?>" >
-	                        <option selected value='none'><?php echo _("Select"); ?></option>"
-	                    <?php
-	                        foreach ($permission_list as $permission) {
-	                        	echo "<option value=$permission[id]>$permission[name]</option>";
-	                        }
-	                    ?>
-	                </select>
-	                </td>
-	            </tr>
-	            <tr>
-                	<td>
-                    	<a href='#' class='info'><?php echo _("Refill"); ?><span><?php echo _("Refill balance for imported extensions?"); ?></span></a></td>
-	                </td>
-	                <td>
-	                    <select name='refill' tabindex="<?php echo ++$tabindex;?>">
-	                    <?php
-	                        foreach ($active_list as $refill) {
-	                                echo "<option value=$refill[id]>$refill[name]</option>";
-	                        }
-	                    ?>
-	                    </select>
-	                </td>
-	            </tr>
-	            <tr>
-                	<td>
-                    	<a href='#' class='info'><?php echo _("Use Limit"); ?><span><?php echo _("Allow unlimited calling for imported extensions?"); ?></span></a></td>
-	                </td>
-	                <td>
-	                    <select name='use_limit' tabindex="<?php echo ++$tabindex;?>">
-	                    <?php
-	                        foreach ($active_list as $use_limit) {
-	                                echo "<option value=$use_limit[id]>$use_limit[name]</option>";
-	                        }
-	                    ?>
-	                    </select>
-	                </td>
-	            </tr>
-	            <tr>
-	                <td>
-	                    <a href='#' class='info'><?php echo _("Initial Balance"); ?><span><?php echo _("Balance that imported extensions will have"); ?></span></a></td>
-	                </td>
-	                <td>
-	                    <input type='text' name='balance' tabindex="<?php echo ++$tabindex;?>">
-	                </td>
-	            </tr>
-			</table>
-			<table class="fbilling">
-				<th width='10%'><input type="checkbox" onClick="toggle(this)" /> <?php echo _("Import all"); ?></th>
-				<th width='10%'><?php echo _("Extension"); ?></th>
-				<th width='80%'><?php echo _("Name"); ?></th>
-		<?php
-		foreach ($extensions as $extension) {
-		?>
-			<tr>
-				<td><input type="checkbox" name="extension" value=<?php echo $extension['extension'] ?> > 
-				<td> <?php echo $extension['extension'] ?> </td>
-				<td> <?php echo $extension['name'] ?> </td>
-			</tr>
-		<?php
+		                </td>
+		            </tr>
+		            <tr>
+	                	<td>
+	                    	<a href='#' class='info'><?php echo _("Refill"); ?><span><?php echo _("Refill balance for imported extensions?"); ?></span></a></td>
+		                </td>
+		                <td>
+		                    <select name='refill' tabindex="<?php echo ++$tabindex;?>">
+		                    <?php
+		                        foreach ($active_list as $refill) {
+		                                echo "<option value=$refill[id]>$refill[name]</option>";
+		                        }
+		                    ?>
+		                    </select>
+		                </td>
+		            </tr>
+		            <tr>
+	                	<td>
+	                    	<a href='#' class='info'><?php echo _("Use Limit"); ?><span><?php echo _("Allow unlimited calling for imported extensions?"); ?></span></a></td>
+		                </td>
+		                <td>
+		                    <select name='use_limit' tabindex="<?php echo ++$tabindex;?>">
+		                    <?php
+		                        foreach ($active_list as $use_limit) {
+		                                echo "<option value=$use_limit[id]>$use_limit[name]</option>";
+		                        }
+		                    ?>
+		                    </select>
+		                </td>
+		            </tr>
+		            <tr>
+		                <td>
+		                    <a href='#' class='info'><?php echo _("Initial Balance"); ?><span><?php echo _("Balance that imported extensions will have"); ?></span></a></td>
+		                </td>
+		                <td>
+		                    <input type='text' name='balance' tabindex="<?php echo ++$tabindex;?>">
+		                </td>
+	        			<td>
+	        				<input type='hidden' name='display' value=<?php echo $display; ?>>
+	        				<input type='hidden' name='cat' value=<?php echo $cat; ?> >
+	        				<input type='hidden' name='action' value=<?php echo $action; ?> >
+	        				<input type='hidden' name='config' value="apply">
+	        				<input name="submit" type="submit" value="<?php echo _("Import")?>" tabindex="<?php echo ++$tabindex;?>">
+	        			</td>
+		            </tr>
+				</table>
+				<table class="fbilling">
+					<th><?php echo _("Select extensions"); ?></th>
+					<th><?php echo _("Action"); ?></th>
+					<th><?php echo _("Extensions to be imported"); ?></th>
+					<tr>
+						<td>
+							<div>
+								<div>
+									<center><select name="from[]" id="multiselect" class="form-control" size="8" multiple="multiple" style="width: 300px;">
+										<?php
+											foreach ($extensions as $extension) {
+												?>
+												<option value=<?php echo $extension['extension']; ?> ><?php echo $extension['extension']." - ".$extension['name']; ?> </option>
+												<?php
+											}
+										?>
+									</select>
+								</div>
+							<div>
+						</td>
+						<td>
+							<center><button type="button" id="multiselect_rightAll">>></button><br/><br/>
+							<button type="button" id="multiselect_rightSelected">></button><br/><br/>
+							<button type="button" id="multiselect_leftSelected"><</i></button><br/><br/>
+							<button type="button" id="multiselect_leftAll"><<</i></button><br/>
+						</td>
+							</div>
+							<td>
+								<div>
+									<center><select name="to[]" id="multiselect_to" class="form-control" size="8" multiple="multiple" style="width: 300px;"></select>
+								</div>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</form>
+			<?php
 		}
-		?>
-			</table>
-		</form>
-		<?php
-		page($number_of_pages,$page,$cat);
 	}
-
+	if ($_REQUEST['config'] == 'apply') {
+		echo "Applying configuration changes";
+	}
 }
+
 // end import
 ?>
 
@@ -161,5 +192,37 @@ function toggle(source) {
   for(var i=0, n=checkboxes.length;i<n;i++) {
     checkboxes[i].checked = source.checked;
   }
+}
+
+jQuery(document).ready(function($) {
+	$('#multiselect').multiselect();
+});
+
+
+function check_extension_form() {
+    if (document.forms["extension_form"]["permission_id"]) {
+        if (document.forms["extension_form"]["permission_id"].value=='none') {
+            alert("Please select permission");
+            return false;
+        }
+    }
+    if (document.forms["extension_form"]["tenant_id"]) {
+        if (document.forms["extension_form"]["tenant_id"].value=='none') {
+            alert("Please select tenant");
+            return false;
+        }
+    }
+    if (document.forms["extension_form"]["balance"]) {
+        if (document.forms["extension_form"]["balance"].value==null || document.forms["extension_form"]["balance"].value=="") {
+            alert("Please enter valid balance");
+            return false;
+        }
+    }
+    if (document.forms["extension_form"]["to"]) {
+        if (document.forms["extension_form"]["to"].value==null || document.forms["extension_form"]["to"].value=="" || document.forms["extension_form"]["to"].length == 0) {
+            alert("Please select at least one xtension to import");
+            return false;
+        }
+    }
 }
 </script>
