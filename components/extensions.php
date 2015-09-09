@@ -174,14 +174,15 @@ if ($action == 'import') {
 		}
 	}
 	if ($_REQUEST['config'] == 'apply') {
-		echo "Applying configuration changes";
+		//echo "Applying configuration changes";
 		foreach ($extension as $sip_num) {
-			$values .= "(\"$sip_num\",\"$balance\",\"$permission_id\",\"$tenant_id\",\"$refill\",\"$use_limit\"),";
+			$values .= "(\"$sip_num\",(SELECT users.name FROM users WHERE users.extension = $sip_num),\"$balance\",\"$permission_id\",\"$tenant_id\",\"$refill\",\"$use_limit\"),";
 		}
 		$values = substr($values, 0,-1);	// remove trailing comma;
-		$sql = "INSERT INTO billing_extensions (sip_num,credit,permission_id,tenant_id,refill,use_limit) VALUES ";
+		$sql = "INSERT INTO billing_extensions (sip_num,alias,credit,permission_id,tenant_id,refill,use_limit) VALUES ";
 		$sql .= $values;
-		echo $sql;
+		sql($sql);
+		redirect_standard('cat');
 	}
 }
 
