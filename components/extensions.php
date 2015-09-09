@@ -49,10 +49,6 @@ if ($action == 'import') {
 		// get all extensions for paging purposes
 		$sql = "SELECT extension,name FROM users WHERE users.extension NOT IN (SELECT sip_num FROM billing_extensions)";
 		$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
-		$number_of_pages = ceil(sizeof($extensions) / 20);
-		//get only results that we will display on single page
-		$sql .= " LIMIT 20 OFFSET $offset";
-		$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
 		if (sizeof($extensions) == 0) {
 			echo _("All extensions seem to be present in FBilling...");
 		} else {
@@ -179,9 +175,13 @@ if ($action == 'import') {
 	}
 	if ($_REQUEST['config'] == 'apply') {
 		echo "Applying configuration changes";
-		foreach ($extension as $ext) {
-			echo $ext;
+		foreach ($extension as $sip_num) {
+			$values .= "(\"$sip_num\",\"$balance\",\"$permission_id\",\"$tenant_id\",\"$refill\",\"$use_limit\"),";
 		}
+		$values = substr($values, 0,-1);	// remove trailing comma;
+		$sql = "INSERT INTO billing_extensions (sip_num,credit,permission_id,tenant_id,refill,use_limit) VALUES ";
+		$sql .= $values;
+		echo $sql;
 	}
 }
 
