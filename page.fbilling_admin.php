@@ -48,6 +48,7 @@ $extension = isset($_REQUEST['to'])?$_REQUEST['to']:array('0');
 $balance = isset($_REQUEST['balance'])?$_REQUEST['balance']:0;
 $use_limit = isset($_REQUEST['use_limit'])?$_REQUEST['use_limit']:0;
 $refill = isset($_REQUEST['refill'])?$_REQUEST['refill']:0;
+$refill_value = isset($_REQUEST['refill_value'])?$_REQUEST['refill_value']:0;
 $prefix_id = isset($_REQUEST['prefix_id'])?$_REQUEST['prefix_id']:'';
 $tariff_id = isset($_REQUEST['tariff_id'])?$_REQUEST['tariff_id']:'';
 $trunk_id = isset($_REQUEST['trunk_id'])?$_REQUEST['trunk_id']:'';

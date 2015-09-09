@@ -92,6 +92,20 @@ if ($action == 'import') {
 		            </tr>
 		            <tr>
 	                	<td>
+	                    	<a href='#' class='info'><?php echo _("Use Limit"); ?><span><?php echo _("Allow unlimited calling for imported extensions?"); ?></span></a></td>
+		                </td>
+		                <td>
+		                    <select name='use_limit' tabindex="<?php echo ++$tabindex;?>">
+		                    <?php
+		                        foreach ($active_list as $use_limit) {
+		                                echo "<option value=$use_limit[id]>$use_limit[name]</option>";
+		                        }
+		                    ?>
+		                    </select>
+		                </td>
+		            </tr>
+		            <tr>
+	                	<td>
 	                    	<a href='#' class='info'><?php echo _("Refill"); ?><span><?php echo _("Refill balance for imported extensions?"); ?></span></a></td>
 		                </td>
 		                <td>
@@ -105,17 +119,11 @@ if ($action == 'import') {
 		                </td>
 		            </tr>
 		            <tr>
-	                	<td>
-	                    	<a href='#' class='info'><?php echo _("Use Limit"); ?><span><?php echo _("Allow unlimited calling for imported extensions?"); ?></span></a></td>
+		                <td>
+		                    <a href='#' class='info'><?php echo _("Refill Value"); ?><span><?php echo _("Value by which extension balance will be refilled"); ?></span></a></td>
 		                </td>
 		                <td>
-		                    <select name='use_limit' tabindex="<?php echo ++$tabindex;?>">
-		                    <?php
-		                        foreach ($active_list as $use_limit) {
-		                                echo "<option value=$use_limit[id]>$use_limit[name]</option>";
-		                        }
-		                    ?>
-		                    </select>
+		                    <input type='text' name='refill_value' tabindex="<?php echo ++$tabindex;?>">
 		                </td>
 		            </tr>
 		            <tr>
@@ -176,10 +184,10 @@ if ($action == 'import') {
 	if ($_REQUEST['config'] == 'apply') {
 		//echo "Applying configuration changes";
 		foreach ($extension as $sip_num) {
-			$values .= "(\"$sip_num\",(SELECT users.name FROM users WHERE users.extension = $sip_num),\"$balance\",\"$permission_id\",\"$tenant_id\",\"$refill\",\"$use_limit\"),";
+			$values .= "(\"$sip_num\",(SELECT users.name FROM users WHERE users.extension = $sip_num),\"$balance\",\"$refill_value\",\"$permission_id\",\"$tenant_id\",\"$refill\",\"$use_limit\"),";
 		}
 		$values = substr($values, 0,-1);	// remove trailing comma;
-		$sql = "INSERT INTO billing_extensions (sip_num,alias,credit,permission_id,tenant_id,refill,use_limit) VALUES ";
+		$sql = "INSERT INTO billing_extensions (sip_num,alias,credit,refill_value,permission_id,tenant_id,refill,use_limit) VALUES ";
 		$sql .= $values;
 		sql($sql);
 		redirect_standard('cat');
