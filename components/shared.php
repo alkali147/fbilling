@@ -44,16 +44,20 @@ if ($cat != 'prefixes' and $cat != 'tariffs' and $cat != 'recordings' and $cat !
 function page($number_of_pages,$page,$cat) { // used int tariffs in prefixes, in future we should move to new function
 	$request_inputs = "
 		<input type='hidden' name='display' value='fbilling_admin'>
-		<input type='hidden' name='action' value='list'>
 		<input type='hidden' name='cat' value='$cat'>
 		<input type='hidden' name='prefix' value=$_REQUEST[prefix] >
 		<input type='hidden' name='prefix_weight_id' value=$_REQUEST[prefix_weight_id] >
 	";
 	if ($cat == 'prefixes') {
+		$request_inputs .= "<input type='hidden' name='action' value='list'>";
 		$request_inputs .= "<input type='hidden' name='prefix_is_active' value=$_REQUEST[prefix_is_active] >";
 	}
 	if ($cat == 'tariffs') {
+		$request_inputs .= "<input type='hidden' name='action' value='list'>";
 		$request_inputs .= "<input type='hidden' name='tenant_id' value=$_REQUEST[tenant_id] >";
+	}
+	if ($cat == 'extensions') {
+		$request_inputs .= "<input type='hidden' name='action' value='import'>";
 	}
 	echo "
     <table>

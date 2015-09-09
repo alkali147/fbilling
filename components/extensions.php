@@ -46,6 +46,10 @@ if ($action == 'import') {
 	echo "Import Extensions<br />";
 	// get all extensions that exist in FreePBX but not in FBilling
 	$sql = "SELECT extension,name FROM users WHERE users.extension NOT IN (SELECT sip_num FROM billing_extensions)";
+	echo $sql;
+	$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
+	$number_of_pages = ceil(sizeof($extensions) / 20);
+	$sql .= " LIMIT 20 OFFSET $offset";
 	$extensions = sql($sql,'getAll',DB_FETCHMODE_ASSOC);
 	if (sizeof($extensions) == 0) {
 		echo _("All extensions seem to be present in FBilling...");
@@ -72,6 +76,7 @@ if ($action == 'import') {
 			</table>
 		</form>
 		<?php
+		page($number_of_pages,$page,$cat);
 	}
 
 }
