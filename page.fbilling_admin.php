@@ -43,6 +43,7 @@ $trunk_list = fbilling_get_list('trunks');
 $cause_list = fbilling_get_list('causes');
 $tenant_id = isset($_REQUEST['tenant_id'])?$_REQUEST['tenant_id']:'all';
 $weight_id = isset($_REQUEST['weight_id'])?$_REQUEST['weight_id']:array('0');
+$extension = isset($_REQUEST['to'])?$_REQUEST['to']:array('0');
 $prefix_id = isset($_REQUEST['prefix_id'])?$_REQUEST['prefix_id']:'';
 $tariff_id = isset($_REQUEST['tariff_id'])?$_REQUEST['tariff_id']:'';
 $trunk_id = isset($_REQUEST['trunk_id'])?$_REQUEST['trunk_id']:'';

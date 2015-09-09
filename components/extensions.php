@@ -150,7 +150,7 @@ if ($action == 'import') {
 										<?php
 											foreach ($extensions as $extension) {
 												?>
-												<option value=<?php echo $extension['extension']; ?> ><?php echo $extension['extension']." - ".$extension['name']; ?> </option>
+												<option value=<?php echo $extension['extension']; ?> selected ><?php echo $extension['extension']." - ".$extension['name']; ?>  </option>
 												<?php
 											}
 										?>
@@ -167,7 +167,7 @@ if ($action == 'import') {
 							</div>
 							<td>
 								<div>
-									<center><select name="to[]" id="multiselect_to" class="form-control" size="8" multiple="multiple" style="width: 300px;"></select>
+									<center><select name="to[]" id="multiselect_to" class="form-control" size="8" multiple="multiple" style="width: 300px;" selected></select>
 								</div>
 							</div>
 						</td>
@@ -179,6 +179,9 @@ if ($action == 'import') {
 	}
 	if ($_REQUEST['config'] == 'apply') {
 		echo "Applying configuration changes";
+		foreach ($extension as $ext) {
+			echo $ext;
+		}
 	}
 }
 
@@ -218,11 +221,6 @@ function check_extension_form() {
             return false;
         }
     }
-    if (document.forms["extension_form"]["to"]) {
-        if (document.forms["extension_form"]["to"].value==null || document.forms["extension_form"]["to"].value=="" || document.forms["extension_form"]["to"].length == 0) {
-            alert("Please select at least one xtension to import");
-            return false;
-        }
-    }
 }
+
 </script>
