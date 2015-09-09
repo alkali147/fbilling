@@ -50,19 +50,40 @@ if ($action == 'import') {
 	if (sizeof($extensions) == 0) {
 		echo _("All extensions seem to be present in FBilling...");
 	} else {
+		$tenant_list = fbilling_get_list('tenants');
+		$permission_list = fbilling_get_list('permissions');
+		?>
+		<form name='extension_form' method='GET' onsubmit='return check_extension_form();'>		
+			<table class="fbilling">
+				<th width='10%'><input type="checkbox" onClick="toggle(this)" /> <?php echo _("Import all"); ?></th>
+				<th width='10%'><?php echo _("Extension"); ?></th>
+				<th width='80%'><?php echo _("Name"); ?></th>
+		<?php
 		foreach ($extensions as $extension) {
 		?>
-			<form name='extension_form' method='GET' onsubmit='return check_extension_form();'>			
-				<table>
-					<tr>
-						<td><input type="checkbox" name="extension" value=<?php echo $extension['extension'] ?> > <?php echo $extension['name'] ?>
-					</tr>
-				</table>
-			</form>
+			<tr>
+				<td><input type="checkbox" name="extension" value=<?php echo $extension['extension'] ?> > 
+				<td> <?php echo $extension['extension'] ?> </td>
+				<td> <?php echo $extension['name'] ?> </td>
+			</tr>
 		<?php
 		}
+		?>
+			</table>
+		</form>
+		<?php
 	}
 
 }
 // end import
 ?>
+
+
+<script language="JavaScript">
+function toggle(source) {
+  checkboxes = document.getElementsByName('extension');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+}
+</script>
