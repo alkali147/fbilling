@@ -35,8 +35,8 @@ include "shared.php";
 if ($action == 'overview') {
 	?>
 	<a class="fbilling" href=/admin/config.php?display=fbilling_admin&cat=extensions&action=import&button=Manage+Extensions><?php echo _("Import Extensions"); ?> </a><br />
-	<!--<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Delete Extensions</a><br />
-	<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Update Extensions</a><br /> -->
+	<!--<a href=/admin/config.php?display=fbilling_admin&cat=extensions&action=overview&button=Manage+Extensions>Delete Extensions</a><br /> -->
+	<a class="fbilling" href=/admin/config.php?display=fbilling_admin&cat=extensions&action=update&button=Manage+Extensions>Update Extensions</a><br />
 	<?php
 }
 // end overview
@@ -192,6 +192,13 @@ if ($action == 'import') {
 	}
 }
 // end import
+
+// start batch update
+if ($action == 'update') {
+	echo "Update extensions!";
+}
+// end batch update
+
 ?>
 
 
@@ -224,6 +231,12 @@ function check_extension_form() {
     if (document.forms["extension_form"]["balance"]) {
         if (document.forms["extension_form"]["balance"].value==null || document.forms["extension_form"]["balance"].value=="") {
             alert("Please enter valid balance");
+            return false;
+        }
+    }
+    if (document.forms["extension_form"]["refill_value"]) {
+        if (document.forms["extension_form"]["refill_value"].value==null || document.forms["extension_form"]["refill_value"].value=="") {
+            alert("Please enter valid Refill Value");
             return false;
         }
     }
