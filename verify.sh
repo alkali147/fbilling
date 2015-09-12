@@ -39,6 +39,7 @@ DIRECTORIES=(
 	components
 	assets
 	assets/css
+	assets/js
 	/var/www/html/fbilling_data
 	/var/www/html/fbilling_data/invoices
 	/var/lib/asterisk/agi-bin/fbilling-libs
@@ -74,7 +75,9 @@ FILES=(
 	components/tenants.php
 	components/trunks.php
 	components/weights.php
+	components/extensions.php
 	assets/css/fbilling.css
+	assets/js/multiselect.js
 	/var/lib/asterisk/agi-bin/fbilling-libs/Account.pm
 	/var/lib/asterisk/agi-bin/fbilling-libs/Call.pm
 	/var/lib/asterisk/agi-bin/fbilling-libs/CDR.pm
