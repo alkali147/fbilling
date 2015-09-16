@@ -185,6 +185,41 @@ Util::log("NOTICE",$uniqueid,"Account tenant name is: $account_details{'tenant_n
 Util::log("NOTICE",$uniqueid,"Account tenant is active: $account_details{'tenant_is_active'}");
 Util::log("NOTICE",$uniqueid,"Account uses limit: $account_details{'account_use_limit'}");
 Util::log("NOTICE",$uniqueid,"Account server ID is: $account_details{'account_server_id'}");                # for future implementation
+Util::log("NOTICE",$uniqueid,"Account is active: $account_details{'account_is_active'}");
+
+
+# check if account is active
+Util::log("NOTICE",$uniqueid,"Checking if account is active...");
+if ($account_details{'is_active'} == 0) {
+    $hangup_cause = 13;
+    Util::log("ERROR",$uniqueid,"Account is not active. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        0,                                      # prefix_id
+        0,                                      # weight_id
+        0,                                      # country
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        $hangup_cause,                          # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
+    $agi->hangup;
+    exit 0;
+} else {
+    Util::log("ERROR",$uniqueid,"Account is active, proceeding...");
+}
 
 
 # check if account is assigned to tenant

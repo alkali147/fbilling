@@ -6,3 +6,4 @@ ALTER TABLE asterisk.billing_extensions MODIFY billing_extensions.sip_num VARCHA
 
 # version 0.9.9
 ALTER TABLE asterisk.billing_extensions ADD COLUMN billing_extensions.is_active int(11) NOT NULL DEFAULT 1;
+INSERT INTO asterisk.billing_causes (`id`, `name`, `recording_id`) VALUES (13, 'Extension is not active', 0);

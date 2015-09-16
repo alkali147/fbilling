@@ -116,7 +116,7 @@ sub get_details {
     # account_server_id might be needed for future implementations
     my $self = shift;
     my $uniqueid = shift;
-    my $query_get_details = "SELECT billing_extensions.credit, billing_extensions.permission_id, billing_permissions.name, billing_tenants.name, billing_tenants.is_active, billing_tenants.id, billing_extensions.use_limit, billing_extensions.outbound_num, billing_extensions.server_id FROM billing_extensions, billing_tenants, billing_permissions WHERE billing_extensions.sip_num = $self->{'exten'} AND billing_extensions.tenant_id = billing_tenants.id AND billing_extensions.permission_id = billing_permissions.id";
+    my $query_get_details = "SELECT billing_extensions.credit, billing_extensions.permission_id, billing_permissions.name, billing_tenants.name, billing_tenants.is_active, billing_tenants.id, billing_extensions.use_limit, billing_extensions.outbound_num, billing_extensions.server_id, billing_extensions.is_active FROM billing_extensions, billing_tenants, billing_permissions WHERE billing_extensions.sip_num = $self->{'exten'} AND billing_extensions.tenant_id = billing_tenants.id AND billing_extensions.permission_id = billing_permissions.id";
     Util::log("NOTICE",$uniqueid,"Executing query to get account details: $query_get_details");
     my $sth_get_details = $dbh->prepare($query_get_details);
     $sth_get_details->execute;
@@ -130,7 +130,8 @@ sub get_details {
         "tenant_id" => $row_get_details[5],
         "account_use_limit" => $row_get_details[6],
         "account_outbound_num" => $row_get_details[7],
-        "account_server_id" => $row_get_details[8]
+        "account_server_id" => $row_get_details[8],
+        "account_is_active" => $row_get_details[9]
     );
     return %account_details;
 }
