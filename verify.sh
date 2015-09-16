@@ -39,6 +39,7 @@ DIRECTORIES=(
 	components
 	assets
 	assets/css
+	assets/js
 	/var/www/html/fbilling_data
 	/var/www/html/fbilling_data/invoices
 	/var/lib/asterisk/agi-bin/fbilling-libs
@@ -74,7 +75,9 @@ FILES=(
 	components/tenants.php
 	components/trunks.php
 	components/weights.php
+	components/extensions.php
 	assets/css/fbilling.css
+	assets/js/multiselect.js
 	/var/lib/asterisk/agi-bin/fbilling-libs/Account.pm
 	/var/lib/asterisk/agi-bin/fbilling-libs/Call.pm
 	/var/lib/asterisk/agi-bin/fbilling-libs/CDR.pm
@@ -87,8 +90,15 @@ FILES=(
 	/etc/asterisk/fbilling.conf
 )
 
+PERL_MODULES=(
+	DBI
+	Asterisk::AGI
+	Config::Tiny
+)
+
 GREEN='\033[0;32m'
 RED='\033[0;31m'
+YELLOW='\033[0;33m'
 NATIVE='\033[0m'
 VERSION=`cat module.xml | grep -A 1 "<name>FBilling" | grep -v name | tr -d "version" | tr -d "<" | tr -d ">" | tr -d "/"`
 OWNER='asterisk'
@@ -144,6 +154,29 @@ do
 done
 
 sleep 1
+echo "Checking for Perl modules..."
+sleep 1
+for i in "${PERL_MODULES[@]}"
+do
+	# http://stackoverflow.com/a/1039122
+	MODULE_EXISTS=`perldoc -l $i 2>/dev/null`
+	if [[ $MODULE_EXISTS == *".pm"* ]]; then
+		printf "${GREEN}[OK]${NATIVE}		Found Perl module $i\n"
+	else
+		printf "${RED}[FAILED]${NATIVE}	Found Perl module $i\n"
+		ERRCOUNT=`expr $ERRCOUNT+1`
+	fi
+done
+
+sleep 1
+echo "Checking FBilling configuration file..."
+sleep 1
+CONF_VALUES=`cat /etc/asterisk/fbilling.conf | grep = | awk '{print $3}' | sed '/^\s*$/d' | wc -l`
+if [ $CONF_VALUES != 7 ]; then
+	printf "${YELLOW}[WARNING]${NATIVE}		Possible missing configuration in /etc/asterisk/fbilling.conf\n"
+else
+	printf "${GREEN}[OK]${NATIVE}		Possible missing configuration in /etc/asterisk/fbilling.conf\n"
+fi
 
 if [ $ERRCOUNT != 0 ]; then
 	echo "There are some errors with this installation, check that all files are present and permissions are correct. Exitting..."

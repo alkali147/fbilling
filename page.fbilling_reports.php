@@ -401,7 +401,7 @@ if ($_REQUEST['export'] == 'Export') { // if user hit export button generate csv
 }
 
 
-// start generate invoice
+// start invoice
 if ($cat == "generate_invoice") {
 ?>
     <h5><?php echo _("Generate Invoice"); ?></h5>

@@ -39,10 +39,16 @@ $form_action = $action == 'add' ? 'conf_add' : 'conf_edit';
 $tenant_list = fbilling_get_list('tenants');
 $weight_list = fbilling_get_list('weights');
 $permission_list = fbilling_get_list('permissions');
+$permission_id = isset($_REQUEST['permission_id'])?$_REQUEST['permission_id']:'all';
 $trunk_list = fbilling_get_list('trunks');
 $cause_list = fbilling_get_list('causes');
 $tenant_id = isset($_REQUEST['tenant_id'])?$_REQUEST['tenant_id']:'all';
 $weight_id = isset($_REQUEST['weight_id'])?$_REQUEST['weight_id']:array('0');
+$extension = isset($_REQUEST['to'])?$_REQUEST['to']:array('0');
+$balance = isset($_REQUEST['balance'])?$_REQUEST['balance']:0;
+$use_limit = isset($_REQUEST['use_limit'])?$_REQUEST['use_limit']:0;
+$refill = isset($_REQUEST['refill'])?$_REQUEST['refill']:0;
+$refill_value = isset($_REQUEST['refill_value'])?$_REQUEST['refill_value']:0;
 $prefix_id = isset($_REQUEST['prefix_id'])?$_REQUEST['prefix_id']:'';
 $tariff_id = isset($_REQUEST['tariff_id'])?$_REQUEST['tariff_id']:'';
 $trunk_id = isset($_REQUEST['trunk_id'])?$_REQUEST['trunk_id']:'';
@@ -127,16 +133,24 @@ $recording_id = isset($_REQUEST['recording_id'])?$_REQUEST['recording_id']:'';
                 <input type="submit" name="button" class="button" value="Manage Recordings" tabindex=<?php echo ++$tabindex; ?>>
             </form>
         </td>
+        <td>
+            <form method='GET' name='fbilling_administration'>
+                <input type='hidden' name='display' value='fbilling_admin'>
+                <input type='hidden' name='cat' value='extensions'>
+                <input type='hidden' name='action' value='overview'>
+                <input type="submit" name="button" class="button" value="Manage Extensions" tabindex=<?php echo ++$tabindex; ?>>
+            </form>
+        </td>
     </tr>
 <table>
 
 <?php
-$allowed_categories = array("tenants","weights","permissions","prefixes","tariffs","trunks","recordings");
+$allowed_categories = array("tenants","weights","permissions","prefixes","tariffs","trunks","recordings",'extensions');
 if (in_array($cat, $allowed_categories)) {
     $include = "components/$cat".".php";
     include "$include";
 } else {
-    echo "Something went wrond, try again...<br />";
+    echo _("Something went wrong, try again...")."<br />";
 }
 
 ?>
