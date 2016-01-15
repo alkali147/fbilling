@@ -60,6 +60,7 @@ $queries[] = "INSERT INTO `billing_causes` (`id`, `name`, `recording_id`) VALUES
   (10, 'Prefix is not active', 0),
   (11, 'Permission does not exists', 0),
   (12, 'Permission is not active', 0),
+  (13, 'Extension is not active', 0),
   (90, 'Call finished - ANSWER', 0),
   (91, 'Call finished - BUSY', 0),
   (92, 'Call finished - NO ANSWER', 0),
@@ -104,6 +105,7 @@ $queries[] = "CREATE TABLE IF NOT EXISTS `billing_extensions` (
   `use_limit` int(11) DEFAULT '1',
   `server_id` int(11) NOT NULL,
   `tenant_id` int(11) NOT NULL,
+  `is_active` int(11) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `sip_num` (`sip_num`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;

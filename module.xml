@@ -4,11 +4,12 @@
     <type>setup</type>
     <category>Applications</category>
     <name>FBilling</name>
-    <version>0.9.7</version>
+    <version>0.9.9</version>
     <publisher>Roman Khomasuridze</publisher>
     <candisable>yes</candisable>
     <canuninstall>yes</canuninstall>
     <changelog>
+        *0.9.8*     - extension management
         *0.9.7*     - invoicing
 	    *0.9.6*     - pre-release, most of functionality implemented at this time
         *0.9.5*     - cleanup
