@@ -93,7 +93,7 @@ sub get_prefix {
     my %prefix;
     # this query is designed to return prefix that is best matched with did
     # for future, if LCR will be imlemented query should be changed, because as of now it only returns only one prefix match
-    my $query_get_prefix = "SELECT * FROM billing_prefixes WHERE $self->{'did'} LIKE CONCAT(pref, '%') ORDER BY LENGTH(pref) DESC LIMIT 1";
+    my $query_get_prefix = "SELECT * FROM billing_prefixes WHERE '".$self->{'did'}."' LIKE CONCAT(pref, '%') ORDER BY LENGTH(pref) DESC LIMIT 1";
     Util::log("NOTICE",$uniqueid,"Executing query to get prefix details: $query_get_prefix");
     my $sth_get_prefix = $dbh->prepare($query_get_prefix);
     $sth_get_prefix->execute;

@@ -73,7 +73,7 @@ if (!$dbh) {
 
 ## start variable declaration
 my $current_date = `date +%Y"-"%m"-"%d" "%H":"%M":"%S | tr -d '\n'`;
-our $VERSION = "0.9.1";
+our $VERSION = "0.9.9";
 my %agi_input = $agi->ReadParse();
 my $did = $agi->get_variable('EXTEN');
 # if outbound caller id is set in extension or trunks configuration, we can't catch correct extension number via agi_input{'callerid'}, 
