@@ -1,7 +1,7 @@
 <?php
 
 /*
-Copyright (c) 2014-2015, Roman Khomasuridze, (khomasuridze@gmail.com)
+Copyright (c) 2014-2016, Roman Khomasuridze, (khomasuridze@gmail.com)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@ if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
 $cat = isset($_REQUEST['cat'])?$_REQUEST['cat']:'tenants';
 $id = isset($_REQUEST['id'])?$_REQUEST['id']:'';
 $name = isset($_REQUEST['name'])?$_REQUEST['name']:'';
+$credit = isset($_REQUEST['credit'])?$_REQUEST['credit']:'';
 $is_active = isset($_REQUEST['is_active'])?$_REQUEST['is_active']:'all';
 $form_action = $action == 'add' ? 'conf_add' : 'conf_edit';
 $tenant_list = fbilling_get_list('tenants');

@@ -183,6 +183,7 @@ Util::log("NOTICE",$uniqueid,"Account permission name is: $account_details{'acco
 Util::log("NOTICE",$uniqueid,"Account tenant ID is: $account_details{'tenant_id'}");
 Util::log("NOTICE",$uniqueid,"Account tenant name is: $account_details{'tenant_name'}");
 Util::log("NOTICE",$uniqueid,"Account tenant is active: $account_details{'tenant_is_active'}");
+Util::log("NOTICE",$uniqueid,"Account tenant credit is: $account_details{'tenant_credit'}");
 Util::log("NOTICE",$uniqueid,"Account uses limit: $account_details{'account_use_limit'}");
 Util::log("NOTICE",$uniqueid,"Account server ID is: $account_details{'account_server_id'}");                # for future implementation
 Util::log("NOTICE",$uniqueid,"Account is active: $account_details{'account_is_active'}");

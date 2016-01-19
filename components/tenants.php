@@ -1,7 +1,7 @@
 <?php
 
 /*
-Copyright (c) 2014-2015, Roman Khomasuridze, (khomasuridze@gmail.com)
+Copyright (c) 2014-2016, Roman Khomasuridze, (khomasuridze@gmail.com)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,14 @@ if ($action == 'edit' or $action == 'add') { // startif (action add/edit)
             </tr>
             <tr>
                 <td>
+                    <a href='#' class='info'><?php echo _("Tenant Credit"); ?><span><?php echo _("Credit for this tenant<br/>This credit can be shared by all extensions belonging to this tenant"); ?></span></a></td>
+                </td>
+                <td>
+                    <input type='text' name='credit' tabindex="<?php echo ++$tabindex;?>" <?php if ($action == 'edit') {echo "value='".$tenant_data['credit']."'";} ?> >
+                </td>
+            </tr>
+            <tr>
+                <td>
                     <a href='#' class='info'><?php echo _("Active"); ?><span><?php echo _("Enable/disable this tenant<br />If disabled, any extensions assigned to this tenant will not be able to make outbound calls"); ?></span></a></td>
                 </td>
                 <td>
@@ -86,8 +94,8 @@ if ($action == 'conf_add') {
         echo "<a href='javascript:history.go(-1)''> Go Back</a>";
         return true;
     }
-    $fields = array('name','is_active');
-    $values = array($name,$is_active);
+    $fields = array('name','is_active','credit');
+    $values = array($name,$is_active,$credit);
     fbilling_add($cat,$fields,$values);
     redirect_standard('cat');
 }
@@ -108,7 +116,7 @@ if ($action == 'conf_edit') {
         echo "<a href='javascript:history.go(-1)''> Go Back</a>";
         return true;
     } else {
-        $fields = "name = '$name', is_active = $is_active";
+        $fields = "name = '$name', is_active = $is_active, credit = '$credit'";
         fbilling_edit($cat,$fields,$id);
         redirect_standard('cat');
     }
