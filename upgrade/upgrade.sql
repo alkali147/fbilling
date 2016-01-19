@@ -7,3 +7,14 @@ ALTER TABLE asterisk.billing_extensions MODIFY billing_extensions.sip_num VARCHA
 # version 0.9.9
 ALTER TABLE asterisk.billing_extensions ADD COLUMN billing_extensions.is_active int(11) NOT NULL DEFAULT 1;
 INSERT INTO asterisk.billing_causes (`id`, `name`, `recording_id`) VALUES (13, 'Extension is not active', 0);
+
+# version 1.1.0
+CREATE TABLE IF NOT EXISTS `billing_payments` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `extension_id` int(11) NOT NULL,
+    `tenant_id` int(11) NOT NULL,
+    `date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+    `amount` varchar(8) NOT NULL DEFAULT 0,
+    `comment` varchar(256) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
