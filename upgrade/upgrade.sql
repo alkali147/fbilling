@@ -18,3 +18,5 @@ CREATE TABLE IF NOT EXISTS `billing_payments` (
     `comment` varchar(256) NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+ALTER TABLE asterisk.billing_tenants ADD COLUMN
+billing_tenants.credit float NOT NULL;

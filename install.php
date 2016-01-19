@@ -2,7 +2,7 @@
 
 
 /*
-Copyright (c) 2014-2015, Roman Khomasuridze, (khomasuridze@gmail.com)
+Copyright (c) 2014-2016, Roman Khomasuridze, (khomasuridze@gmail.com)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -170,6 +170,7 @@ $queries[] = "CREATE TABLE IF NOT EXISTS `billing_tenants` (
     `name` varchar(32) NOT NULL,
     `weight_id` tinyint(4) NOT NULL,
     `is_active` tinyint(1) NOT NULL,
+    `credit` float NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 ";

@@ -116,7 +116,17 @@ sub get_details {
     # account_server_id might be needed for future implementations
     my $self = shift;
     my $uniqueid = shift;
-    my $query_get_details = "SELECT billing_extensions.credit, billing_extensions.permission_id, billing_permissions.name, billing_tenants.name, billing_tenants.is_active, billing_tenants.id, billing_extensions.use_limit, billing_extensions.outbound_num, billing_extensions.server_id, billing_extensions.is_active FROM billing_extensions, billing_tenants, billing_permissions WHERE billing_extensions.sip_num = $self->{'exten'} AND billing_extensions.tenant_id = billing_tenants.id AND billing_extensions.permission_id = billing_permissions.id";
+    my $query_get_details = "SELECT ";
+    $query_get_details .= "billing_extensions.credit, billing_extensions.permission_id, ";
+    $query_get_details .= "billing_extensions.use_limit, billing_extensions.outbound_num, ";
+    $query_get_details .= "billing_extensions.server_id, billing_extensions.is_active "; 
+    $query_get_details .= "billing_tenants.name, billing_tenants.is_active, ";
+    $query_get_details .= "billing_tenants.id, billing_tenants.credit, ";
+    $query_get_details .= "billing_permissions.name, ";    
+    $query_get_details .= "FROM billing_extensions, billing_tenants, billing_permissions ";
+    $query_get_details .= "WHERE billing_extensions.sip_num = $self->{'exten'} AND ";
+    $query_get_details .= "billing_extensions.tenant_id = billing_tenants.id AND ";
+    $query_get_details .= "billing_extensions.permission_id = billing_permissions.id";
     Util::log("NOTICE",$uniqueid,"Executing query to get account details: $query_get_details");
     my $sth_get_details = $dbh->prepare($query_get_details);
     $sth_get_details->execute;
@@ -124,14 +134,15 @@ sub get_details {
     my %account_details = (
         "account_credit" => $row_get_details[0],
         "account_permission_id" => $row_get_details[1],
-        "account_permission_name" => $row_get_details[2],
-        "tenant_name" => $row_get_details[3],
-        "tenant_is_active" => $row_get_details[4],
-        "tenant_id" => $row_get_details[5],
-        "account_use_limit" => $row_get_details[6],
-        "account_outbound_num" => $row_get_details[7],
-        "account_server_id" => $row_get_details[8],
-        "account_is_active" => $row_get_details[9]
+        "account_use_limit" => $row_get_details[2],
+        "account_outbound_num" => $row_get_details[3],
+        "account_server_id" => $row_get_details[4],
+        "account_is_active" => $row_get_details[5],
+        "tenant_is_active" => $row_get_details[6],
+        "tenant_name" => $row_get_details[7],
+        "tenant_id" => $row_get_details[8],
+        "tenant_credit" => $row_get_details[9],
+        "account_permission_name" => $row_get_details[10]
     );
     return %account_details;
 }
