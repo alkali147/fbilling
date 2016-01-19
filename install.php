@@ -63,6 +63,7 @@ $queries[] = "INSERT INTO `billing_causes` (`id`, `name`, `recording_id`) VALUES
     (11, 'Permission does not exists', 0),
     (12, 'Permission is not active', 0),
     (13, 'Extension is not active', 0),
+    (14, 'Tenant has no credit', 0),
     (90, 'Call finished - ANSWER', 0),
     (91, 'Call finished - BUSY', 0),
     (92, 'Call finished - NO ANSWER', 0),
