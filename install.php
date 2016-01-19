@@ -113,6 +113,7 @@ $queries[] = "CREATE TABLE IF NOT EXISTS `billing_extensions` (
     `server_id` int(11) NOT NULL,
     `tenant_id` int(11) NOT NULL,
     `is_active` int(11) NOT NULL DEFAULT '1',
+    `personal_credit` int(1) DEFAULT '1',
     PRIMARY KEY (`id`),
     UNIQUE KEY `sip_num` (`sip_num`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
