@@ -78,8 +78,8 @@ my %agi_input = $agi->ReadParse();
 my $did = $agi->get_variable('EXTEN');
 # if outbound caller id is set in extension or trunks configuration, we can't catch correct extension number via agi_input{'callerid'}, 
 # so we must pass it as an argument in dialplan, otherwise we can use agi_input{'callerid'}
-#my $cid = $agi_input{"callerid"};
-my $cid = $ARGV[0];
+my $cid = $agi_input{"callerid"};
+#my $cid = $ARGV[0];
 my $uniqueid = $agi_input{"uniqueid"};
 my $account;
 my $account_exists = 0;
@@ -185,13 +185,14 @@ Util::log("NOTICE",$uniqueid,"Account tenant name is: $account_details{'tenant_n
 Util::log("NOTICE",$uniqueid,"Account tenant is active: $account_details{'tenant_is_active'}");
 Util::log("NOTICE",$uniqueid,"Account tenant credit is: $account_details{'tenant_credit'}");
 Util::log("NOTICE",$uniqueid,"Account uses limit: $account_details{'account_use_limit'}");
+Util::log("NOTICE",$uniqueid,"Account uses personal credit: $account_details{'account_use_personal_credit'}");
 Util::log("NOTICE",$uniqueid,"Account server ID is: $account_details{'account_server_id'}");                # for future implementation
 Util::log("NOTICE",$uniqueid,"Account is active: $account_details{'account_is_active'}");
 
 
 # check if account is active
 Util::log("NOTICE",$uniqueid,"Checking if account is active...");
-if ($account_details{'is_active'} == 0) {
+if ($account_details{'account_is_active'} == 0) {
     $hangup_cause = 13;
     Util::log("ERROR",$uniqueid,"Account is not active. Exitting...");
     $cdr->insert(

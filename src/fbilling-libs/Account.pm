@@ -112,6 +112,7 @@ sub check_if_exists {
 # requires uniqueid
 # returns hash containing credit, permission_id, permission_name, tenant_name, tenant_is_active, tenant_id, use_limit, outbound_num, server_id
 sub get_details {
+    # TODO handling result with fetchror_array is messy, need to handle results via hash!
     # account_outbound_num is OBSOLETE
     # account_server_id might be needed for future implementations
     my $self = shift;
@@ -122,7 +123,7 @@ sub get_details {
     $query_get_details .= "billing_extensions.server_id, billing_extensions.is_active, "; 
     $query_get_details .= "billing_tenants.name, billing_tenants.is_active, ";
     $query_get_details .= "billing_tenants.id, billing_tenants.credit, ";
-    $query_get_details .= "billing_permissions.name ";    
+    $query_get_details .= "billing_permissions.name, billing_extensions.personal_credit ";    
     $query_get_details .= "FROM billing_extensions, billing_tenants, billing_permissions ";
     $query_get_details .= "WHERE billing_extensions.sip_num = $self->{'exten'} AND ";
     $query_get_details .= "billing_extensions.tenant_id = billing_tenants.id AND ";
@@ -135,11 +136,12 @@ sub get_details {
         "account_credit" => $row_get_details[0],
         "account_permission_id" => $row_get_details[1],
         "account_use_limit" => $row_get_details[2],
+        "account_use_personal_credit" => $row_get_details[11],
         "account_outbound_num" => $row_get_details[3],
         "account_server_id" => $row_get_details[4],
         "account_is_active" => $row_get_details[5],
-        "tenant_is_active" => $row_get_details[6],
-        "tenant_name" => $row_get_details[7],
+        "tenant_is_active" => $row_get_details[7],
+        "tenant_name" => $row_get_details[6],
         "tenant_id" => $row_get_details[8],
         "tenant_credit" => $row_get_details[9],
         "account_permission_name" => $row_get_details[10]
