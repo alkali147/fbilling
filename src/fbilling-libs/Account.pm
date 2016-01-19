@@ -119,10 +119,10 @@ sub get_details {
     my $query_get_details = "SELECT ";
     $query_get_details .= "billing_extensions.credit, billing_extensions.permission_id, ";
     $query_get_details .= "billing_extensions.use_limit, billing_extensions.outbound_num, ";
-    $query_get_details .= "billing_extensions.server_id, billing_extensions.is_active "; 
+    $query_get_details .= "billing_extensions.server_id, billing_extensions.is_active, "; 
     $query_get_details .= "billing_tenants.name, billing_tenants.is_active, ";
     $query_get_details .= "billing_tenants.id, billing_tenants.credit, ";
-    $query_get_details .= "billing_permissions.name, ";    
+    $query_get_details .= "billing_permissions.name ";    
     $query_get_details .= "FROM billing_extensions, billing_tenants, billing_permissions ";
     $query_get_details .= "WHERE billing_extensions.sip_num = $self->{'exten'} AND ";
     $query_get_details .= "billing_extensions.tenant_id = billing_tenants.id AND ";
