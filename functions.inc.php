@@ -2,7 +2,7 @@
 
 
 /*
-Copyright (c) 2014-2015, Roman Khomasuridze, (khomasuridze@gmail.com)
+Copyright (c) 2014-2016, Roman Khomasuridze, (khomasuridze@gmail.com)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -113,6 +113,10 @@ function fbilling_applyhooks() {
     $currentcomponent->addoptlistitem('fbilling_limit', '1', _('Yes'));
     $currentcomponent->addoptlistitem('fbilling_limit', '0', _('No'));
     $currentcomponent->setoptlistopts('fbilling_limit', 'sort', false);
+    // select extension.personal_credit
+    $currentcomponent->addoptlistitem('fbilling_extension_use_personal_credit', '1', _('Yes'));
+    $currentcomponent->addoptlistitem('fbilling_extension_use_personal_credit', '0', _('No'));
+    $currentcomponent->setoptlistopts('fbilling_extension_use_personal_credit', 'sort', false);
     // select extension.is_Active
     $currentcomponent->addoptlistitem('fbilling_extension_is_active', '1', _('Yes'));
     $currentcomponent->addoptlistitem('fbilling_extension_is_active', '0', _('No'));
@@ -142,10 +146,18 @@ function fbilling_configpageload() {
     $extension = isset($_REQUEST['extension'])?$_REQUEST['extension']:null;
     $tech_hardware = isset($_REQUEST['tech_hardware'])?$_REQUEST['tech_hardware']:null;
     $fbilling_alias = $astman->database_get("AMPUSER",$extdisplay."/cidname");
-    $sql = "SELECT credit,refill,refill_value,use_limit,tenant_id,permission_id,is_active FROM billing_extensions WHERE sip_num = '$extdisplay';";
+    $sql = "SELECT billing_extensions.credit AS extension_credit,billing_extensions.refill,";
+    $sql .= "billing_extensions.refill_value,billing_extensions.use_limit,";
+    $sql .= "billing_extensions.tenant_id,billing_extensions.permission_id,";
+    $sql .= "billing_extensions.is_active,billing_extensions.personal_credit,";
+    $sql .= "billing_tenants.credit AS tenant_credit ";
+    $sql .= "FROM billing_extensions,billing_tenants WHERE  ";
+    $sql .= "billing_extensions.sip_num = '$extdisplay' AND billing_extensions.tenant_id = billing_tenants.id";
     $extension_data = sql($sql, 'getRow', DB_FETCHMODE_ASSOC);
     $extension_is_active = !$extension_data['is_active'] ? '0' : $extension_data['is_active'];
-    $extension_credit = !$extension_data['credit'] ? '0' : $extension_data['credit'];
+    $extension_credit = !$extension_data['extension_credit'] ? '0' : $extension_data['extension_credit'];
+    $extension_tenant_credit = !$extension_data['tenant_credit'] ? '0' : $extension_data['tenant_credit'];
+    $extension_personal_credit = !$extension_data['personal_credit'] ? '0' : $extension_data['personal_credit'];
     $extension_tenant = !$extension_data['tenant_id'] ? '0' : $extension_data['tenant_id'];
     $extension_permission = !$extension_data['permission_id'] ? '0' : $extension_data['permission_id'];
     $extension_use_limit = !$extension_data['use_limit'] ? '0' : $extension_data['use_limit'];
@@ -163,7 +175,10 @@ function fbilling_configpageload() {
     //echo $extension_address['0'];
     if ($action != 'del') {
         $section = _("FBilling Settings");
+        //echo $extension_data['personal_credit'];
         $currentcomponent->addguielem($section, new gui_textbox('fbilling_credit', $extension_credit, _('Credit'), _("Current credit for this extension, to increase or decrease credit, just change the value here."), "frm_extensions_validateTenantPermission()", _("Please make sure you selected permission and tenant for this extension"), false,0,''));
+        $currentcomponent->addguielem($section, new gui_textbox('fbilling_tenant_credit', $extension_tenant_credit, _('Tenant Credit'), _("Current credit for tenant this extension belongs to<br/>Tenant credit can be changed from Tenants section in FBilling Administration"), "", "", false,0,true));
+        $currentcomponent->addguielem($section, new gui_selectbox('fbilling_extension_use_personal_credit', $currentcomponent->getoptlist('fbilling_extension_use_personal_credit'), $extension_personal_credit, _('Use Personal Credit'), _("Whether or not extension should use personal credit<br/>If set to yes, calls will be charged against credit specified above<br/>If set to no, calls will be charged against tenant credit"),false,""));
         $currentcomponent->addguielem($section, new gui_selectbox('fbilling_extension_is_active', $currentcomponent->getoptlist('fbilling_extension_is_active'), $extension_is_active, _('Active'), _("Whether or not extension is active.<br />If set to No, calls made by this extension will not go through irregardless of permission, tenants, credit..."),false,""));
         $currentcomponent->addguielem($section, new gui_selectbox('fbilling_tenant', $currentcomponent->getoptlist('fbilling_tenant'), $extension_tenant, _('Tenant'), _("Tenant to which this extension will belong"), false,""));
         $currentcomponent->addguielem($section, new gui_selectbox('fbilling_permission', $currentcomponent->getoptlist('fbilling_permission'), $extension_permission, _('Permission'), _("Calling permissions this extension"), false,""));
@@ -196,7 +211,17 @@ function fbilling_configprocess() {
     }
     $fbilling_alias = $astman->database_get("AMPUSER",$extdisplay."/cidname");
     if ($action == 'add' or $action == 'edit') {
-        $sql = "INSERT INTO billing_extensions (alias,sip_num,credit,refill,refill_value,use_limit,permission_id,tenant_id,is_active) VALUES ('$_REQUEST[fbilling_alias]','$extdisplay','$_REQUEST[fbilling_credit]','$_REQUEST[fbilling_refill]','$_REQUEST[fbilling_refill_value]','$_REQUEST[fbilling_limit]','$_REQUEST[fbilling_permission]','$_REQUEST[fbilling_tenant]','$_REQUEST[fbilling_extension_is_active]') ON DUPLICATE KEY UPDATE alias = '$_REQUEST[fbilling_alias]', sip_num = '$extdisplay', credit = '$_REQUEST[fbilling_credit]', refill = '$_REQUEST[fbilling_refill]', refill_value = '$_REQUEST[fbilling_refill_value]', use_limit = '$_REQUEST[fbilling_limit]', permission_id = '$_REQUEST[fbilling_permission]',tenant_id = '$_REQUEST[fbilling_tenant]',is_active = '$_REQUEST[fbilling_extension_is_active]';";
+        $sql = "INSERT INTO billing_extensions ";
+        $sql .= "(alias,sip_num,credit,refill,refill_value,use_limit,permission_id,tenant_id,is_active,personal_credit) ";
+        $sql .= "VALUES ('$_REQUEST[fbilling_alias]','$extdisplay','$_REQUEST[fbilling_credit]','$_REQUEST[fbilling_refill]', ";
+        $sql .= "'$_REQUEST[fbilling_refill_value]','$_REQUEST[fbilling_limit]','$_REQUEST[fbilling_permission]', ";
+        $sql .= "'$_REQUEST[fbilling_tenant]','$_REQUEST[fbilling_extension_is_active]','$_REQUEST[fbilling_extension_use_personal_credit]') ";
+        $sql .= "ON DUPLICATE KEY UPDATE ";
+        $sql .= "alias = '$_REQUEST[fbilling_alias]', sip_num = '$extdisplay', ";
+        $sql .= "credit = '$_REQUEST[fbilling_credit]', refill = '$_REQUEST[fbilling_refill]', ";
+        $sql .= "refill_value = '$_REQUEST[fbilling_refill_value]', use_limit = '$_REQUEST[fbilling_limit]', ";
+        $sql .= "permission_id = '$_REQUEST[fbilling_permission]',tenant_id = '$_REQUEST[fbilling_tenant]',";
+        $sql .= "is_active = '$_REQUEST[fbilling_extension_is_active]',personal_credit = '$_REQUEST[fbilling_extension_use_personal_credit]';";
     } elseif ($action == 'del') {
         $sql = "DELETE FROM billing_extensions WHERE sip_num = '$extdisplay';";
     } 

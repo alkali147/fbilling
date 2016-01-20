@@ -4,11 +4,13 @@
     <type>setup</type>
     <category>Applications</category>
     <name>FBilling</name>
-    <version>0.9.9</version>
+    <version>1.1.0</version>
     <publisher>Roman Khomasuridze</publisher>
     <candisable>yes</candisable>
     <canuninstall>yes</canuninstall>
     <changelog>
+        *1.1.0*     - added tenant credit, extensions now can have both personal credit, or use shared, tenant credit
+        *1.0.0*     - basic billing functionality
         *0.9.8*     - extension management
         *0.9.7*     - invoicing
 	    *0.9.6*     - pre-release, most of functionality implemented at this time

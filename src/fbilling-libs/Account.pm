@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 
-# Copyright (c) 2014-2015, Roman Khomasuridze, <khomasuridze@gmail.com>
+# Copyright (c) 2014-2016, Roman Khomasuridze, <khomasuridze@gmail.com>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -112,11 +112,22 @@ sub check_if_exists {
 # requires uniqueid
 # returns hash containing credit, permission_id, permission_name, tenant_name, tenant_is_active, tenant_id, use_limit, outbound_num, server_id
 sub get_details {
+    # TODO handling result with fetchror_array is messy, need to handle results via hash!
     # account_outbound_num is OBSOLETE
     # account_server_id might be needed for future implementations
     my $self = shift;
     my $uniqueid = shift;
-    my $query_get_details = "SELECT billing_extensions.credit, billing_extensions.permission_id, billing_permissions.name, billing_tenants.name, billing_tenants.is_active, billing_tenants.id, billing_extensions.use_limit, billing_extensions.outbound_num, billing_extensions.server_id, billing_extensions.is_active FROM billing_extensions, billing_tenants, billing_permissions WHERE billing_extensions.sip_num = $self->{'exten'} AND billing_extensions.tenant_id = billing_tenants.id AND billing_extensions.permission_id = billing_permissions.id";
+    my $query_get_details = "SELECT ";
+    $query_get_details .= "billing_extensions.credit, billing_extensions.permission_id, ";
+    $query_get_details .= "billing_extensions.use_limit, billing_extensions.outbound_num, ";
+    $query_get_details .= "billing_extensions.server_id, billing_extensions.is_active, "; 
+    $query_get_details .= "billing_tenants.name, billing_tenants.is_active, ";
+    $query_get_details .= "billing_tenants.id, billing_tenants.credit, ";
+    $query_get_details .= "billing_permissions.name, billing_extensions.personal_credit ";    
+    $query_get_details .= "FROM billing_extensions, billing_tenants, billing_permissions ";
+    $query_get_details .= "WHERE billing_extensions.sip_num = $self->{'exten'} AND ";
+    $query_get_details .= "billing_extensions.tenant_id = billing_tenants.id AND ";
+    $query_get_details .= "billing_extensions.permission_id = billing_permissions.id";
     Util::log("NOTICE",$uniqueid,"Executing query to get account details: $query_get_details");
     my $sth_get_details = $dbh->prepare($query_get_details);
     $sth_get_details->execute;
@@ -124,14 +135,16 @@ sub get_details {
     my %account_details = (
         "account_credit" => $row_get_details[0],
         "account_permission_id" => $row_get_details[1],
-        "account_permission_name" => $row_get_details[2],
-        "tenant_name" => $row_get_details[3],
-        "tenant_is_active" => $row_get_details[4],
-        "tenant_id" => $row_get_details[5],
-        "account_use_limit" => $row_get_details[6],
-        "account_outbound_num" => $row_get_details[7],
-        "account_server_id" => $row_get_details[8],
-        "account_is_active" => $row_get_details[9]
+        "account_use_limit" => $row_get_details[2],
+        "account_use_personal_credit" => $row_get_details[11],
+        "account_outbound_num" => $row_get_details[3],
+        "account_server_id" => $row_get_details[4],
+        "account_is_active" => $row_get_details[5],
+        "tenant_is_active" => $row_get_details[7],
+        "tenant_name" => $row_get_details[6],
+        "tenant_id" => $row_get_details[8],
+        "tenant_credit" => $row_get_details[9],
+        "account_permission_name" => $row_get_details[10]
     );
     return %account_details;
 }
@@ -139,14 +152,31 @@ sub get_details {
 
 # update account credit
 # requires call_cost, uniqueid
-# returns "OK"
-sub update_credit {
+# returns OK for logging purposes
+sub update_personal_credit {
     # see TODO section of this file
     my $self = shift;
     my $call_cost = shift;
     my $uniqueid = shift;
     my $query_update_credit = "UPDATE billing_extensions SET credit = credit - $call_cost WHERE sip_num = $self->{'exten'}";
     Util::log("NOTICE",$uniqueid,"Executing query to update account credit: $query_update_credit");
+    my $sth_update_credit = $dbh->prepare($query_update_credit);
+    $sth_update_credit->execute;
+    return "OK";
+}
+
+
+# update tenant credit
+# requires call_cost, uniqueid, tenant_id
+# returns OK for logging purposes
+sub update_tenant_credit {
+    # see TODO section of this file
+    my $self = shift;
+    my $call_cost = shift;
+    my $uniqueid = shift;
+    my $tenant_id = shift;
+    my $query_update_credit = "UPDATE billing_tenants SET credit = credit - $call_cost WHERE id = '$tenant_id'";
+    Util::log("NOTICE",$uniqueid,"Executing query to update tenant credit: $query_update_credit");
     my $sth_update_credit = $dbh->prepare($query_update_credit);
     $sth_update_credit->execute;
     return "OK";
