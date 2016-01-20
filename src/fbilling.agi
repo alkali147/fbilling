@@ -227,7 +227,30 @@ if ($account_details{'account_is_active'} == 0) {
 # check if account is assigned to tenant
 Util::log("NOTICE",$uniqueid,"Checking if account is assigned to tenant...");
 if ($account_details{'tenant_id'} == 0 or $account_details{'tenant_id'} == '') {
+    $hangup_cause = 15;
     Util::log("ERROR",$uniqueid,"Account is not assigned to any tenant. Exitting...");
+    $cdr->insert(
+        $did,                                   # src
+        $cid,                                   # dst
+        $current_date,                          # calldate
+        0,                                      # billsec
+        0,                                      # prefix_id
+        0,                                      # weight_id
+        0,                                      # country
+        0,                                      # tariff_id
+        0,                                      # tariff_cost
+        0,                                      # tariff_initial_cost
+        0,                                      # total cost
+        $account_details{'tenant_id'},          # tenant_id
+        $uniqueid,                              # uniqueid
+        $hangup_cause,                          # cause_id
+        $account_details{'account_server_id'}   # server_id
+    );
+    $recording_filename = Util::get_recording_filename($hangup_cause,$uniqueid);
+    if ($recording_filename ne '0') {
+        Util::log("Notice",$uniqueid,"Playing message to extension...");
+        $agi->control_stream_file($recording_filename,"test");
+    };
     $agi->hangup;
     exit 0;
 } else {
