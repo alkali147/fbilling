@@ -152,14 +152,31 @@ sub get_details {
 
 # update account credit
 # requires call_cost, uniqueid
-# returns "OK"
-sub update_credit {
+# returns OK for logging purposes
+sub update_personal_credit {
     # see TODO section of this file
     my $self = shift;
     my $call_cost = shift;
     my $uniqueid = shift;
     my $query_update_credit = "UPDATE billing_extensions SET credit = credit - $call_cost WHERE sip_num = $self->{'exten'}";
     Util::log("NOTICE",$uniqueid,"Executing query to update account credit: $query_update_credit");
+    my $sth_update_credit = $dbh->prepare($query_update_credit);
+    $sth_update_credit->execute;
+    return "OK";
+}
+
+
+# update tenant credit
+# requires call_cost, uniqueid, tenant_id
+# returns OK for logging purposes
+sub update_tenant_credit {
+    # see TODO section of this file
+    my $self = shift;
+    my $call_cost = shift;
+    my $uniqueid = shift;
+    my $tenant_id = shift;
+    my $query_update_credit = "UPDATE billing_tenants SET credit = credit - $call_cost WHERE id = '$tenant_id'";
+    Util::log("NOTICE",$uniqueid,"Executing query to update tenant credit: $query_update_credit");
     my $sth_update_credit = $dbh->prepare($query_update_credit);
     $sth_update_credit->execute;
     return "OK";

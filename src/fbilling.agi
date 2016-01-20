@@ -73,7 +73,7 @@ if (!$dbh) {
 
 ## start variable declaration
 my $current_date = `date +%Y"-"%m"-"%d" "%H":"%M":"%S | tr -d '\n'`;
-our $VERSION = "1.0.1";
+our $VERSION = "1.1.0";
 my %agi_input = $agi->ReadParse();
 my $did = $agi->get_variable('EXTEN');
 # if outbound caller id is set in extension or trunks configuration, we can't catch correct extension number via agi_input{'callerid'}, 
@@ -99,6 +99,7 @@ my $dialstring;
 my $cdr;
 my $recording_filename;
 my $hangup_cause;
+my $credit;                                 # global credit variable, can be either shared (tenant) credit, or personal extension credit
 ## end variable declaration
 
 
@@ -220,7 +221,7 @@ if ($account_details{'account_is_active'} == 0) {
     $agi->hangup;
     exit 0;
 } else {
-    Util::log("ERROR",$uniqueid,"Account is active, proceeding...");
+    Util::log("NOTICE",$uniqueid,"Account is active, proceeding...");
 }
 
 
@@ -254,7 +255,7 @@ if ($account_details{'tenant_id'} == 0 or $account_details{'tenant_id'} == '') {
     $agi->hangup;
     exit 0;
 } else {
-    Util::log("ERROR",$uniqueid,"Account is assigned to tenant, proceeding...");
+    Util::log("NOTICE",$uniqueid,"Account is assigned to tenant, proceeding...");
 }
 
 
@@ -291,10 +292,21 @@ if ($account_details{'tenant_is_active'} == 1) {
 }
 
 
+# set "global" credit variable here
+if ($account_details{'account_use_personal_credit'} == 1) {
+    Util::log("NOTICE",$uniqueid,"Account using personal credit, setting credit value to $account_details{'account_credit'}...");
+    $credit = $account_details{'account_credit'};
+} else {
+    Util::log("NOTICE",$uniqueid,"Account using shared tenant credit, setting credit value to $account_details{'tenant_credit'}...");
+    $credit = $account_details{'tenant_credit'};
+}
+
+
 # check if account has credit to call
+# first check whether account uses limit
 if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, check if account has sufficient credit
     Util::log("NOTICE",$uniqueid,"There is limit set on this account, proceeding...");
-    if ($account_details{'account_credit'} <= 0) {
+    if ($credit <= 0) {
         $hangup_cause = 2;
         Util::log("ERROR",$uniqueid,"Account has no sufficient credit. Exitting...");
         $cdr->insert(
@@ -322,7 +334,7 @@ if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, 
         $agi->hangup;
         exit 0;
     } else {
-        Util::log("NOTICE",$uniqueid,"Account has sufficient credit: $account_details{'account_credit'}, proceeding...");
+        Util::log("NOTICE",$uniqueid,"Account has sufficient credit: $credit, proceeding...");
     }
 } else {
     Util::log("NOTICE",$uniqueid,"There is no limit set on this account, proceeding...");
@@ -330,7 +342,7 @@ if ($account_details{'account_use_limit'} == 1) {   # if use_limit is set to 1, 
 
 
 # check prefix
-Util::log("NOTICE",$uniqueid,"Getting prfix information...");
+Util::log("NOTICE",$uniqueid,"Getting prefix information...");
 %prefix = $destination->get_prefix($uniqueid);
 if ($prefix{'prefix_id'} == 0) {
     $hangup_cause = 3;
@@ -446,7 +458,7 @@ Util::log("NOTICE",$uniqueid,"Tariff trunk ID is: $tariff{'tariff_trunk_id'}");
 $call = Call->new(
     "$cid",
     "$did",
-    "$account_details{'account_credit'}",
+    "$credit",
     "$account_details{'tenant_id'}",
     "$account_details{'account_permission_id'}",
     "$prefix{'prefix_id'}",
@@ -605,9 +617,9 @@ if ($max_duration[0] < 60) {
 
 
 # check if initial cost for tariff is less than account credit
-if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'} > $account_details{'account_credit'}) {
+if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'} > $credit) {
     $hangup_cause = 8;
-    Util::log("ERROR",$uniqueid,"Initial cost of this tariff is more than account credit. Exitting...");
+    Util::log("ERROR",$uniqueid,"Initial cost of this tariff is more than credit. Exitting...");
     $cdr->insert(
         $did,                                   # src
         $cid,                                   # dst
@@ -633,7 +645,7 @@ if ($account_details{'account_use_limit'} == 1 and $tariff{'tariff_initial_cost'
     $agi->hangup;
     exit 0;
 } else {
-    Util::log("NOTICE",$uniqueid,"Initial cost of this tariff is less than account credit, proceeding...");
+    Util::log("NOTICE",$uniqueid,"Initial cost of this tariff is less than credit, proceeding...");
 }
 
 
@@ -712,6 +724,7 @@ $billsec = $agi->get_variable('ANSWEREDTIME');                  # TODO move out 
 $disposition = $agi->get_variable('DIALSTATUS');
 
 
+# there's got to be way to handle this in more good way
 if ($billsec == '' or !$billsec) {
     $billsec = 0;
 }
@@ -726,7 +739,13 @@ Util::log("NOTICE",$uniqueid,"Call cost was: $call_cost");
 # update account credit, if needed
 if ($account_details{'account_use_limit'} == 1) {
     Util::log("NOTICE",$uniqueid,"There is limit set on this account, updating credit...");
-    my $update_credit_status = $account->update_credit($call_cost,$uniqueid);
+    # based on whether account uses personal or shared credit, update credit
+    my $update_credit_status;
+    if ($account_details{'account_use_personal_credit'} == 1) {
+        $update_credit_status = $account->update_personal_credit($call_cost,$uniqueid);
+    } else {
+        $update_credit_status = $account->update_tenant_credit($call_cost,$uniqueid,$account_details{'tenant_id'});
+    }
     Util::log("NOTICE",$uniqueid,"Updating credit: $update_credit_status");
 } else {
     Util::log("NOTICE",$uniqueid,"There is no limit set on this account, not updating credit...");
