@@ -24,7 +24,7 @@ Install those modules via cpan or distributions package management system;
 * Create database user for fbilling and edit fbillings configuration file /etc/asterisk/fbilling.conf;
 * Add necessary contexts to dialplan
 ```
-[marco-dialout-trunk-perdial-hook]
+[macro-dialout-trunk-predial-hook]
 exten => s,1,Set(__FBILLINGUSER=${AMPUSER})
 ```
 and
