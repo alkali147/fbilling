@@ -38,7 +38,10 @@ global $db;
 class gui_link_new_tab extends guitext {
     function gui_link_new_tab($elemname, $text, $url, $userlang = true) {
         $parent_class = get_parent_class($this);
-        parent::$parent_class($elemname, $text);
+        // line below seems to cause trouble in freepbx version 13 and above
+        // commenting this out solves the issue and does no harm for versions 12 and below
+        // this should fix issue #29
+        //parent::$parent_class($elemname, $text);
         $this->html_text = "<a href=\"$url\" target=\"_blank\" id =\"$this->elemname\">$text</a>";
     }
 }
