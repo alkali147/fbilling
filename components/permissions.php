@@ -62,7 +62,7 @@ if ($action == 'edit' or $action == 'add') { // startif (action add/edit)
                     <select multiple name='weight_id[]' tabindex="<?php echo ++$tabindex;?>">
                         <?php
                             foreach ($weight_list as $weight) {
-                                if (isset($selected_weights)) {
+                                if (isset($selected_weights)) { // somehow this iiset() is needed in freepbx 13 and higher
                                     if (in_array($weight['id'], $selected_weights)) {
                                     echo "<option selected value=$weight[id]>$weight[name]</option>";
                                     } else {
