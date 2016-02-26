@@ -62,11 +62,16 @@ if ($action == 'edit' or $action == 'add') { // startif (action add/edit)
                     <select multiple name='weight_id[]' tabindex="<?php echo ++$tabindex;?>">
                         <?php
                             foreach ($weight_list as $weight) {
-                                if (in_array($weight['id'], $selected_weights)) {
+                                if (isset($selected_weights)) {
+                                    if (in_array($weight['id'], $selected_weights)) {
                                     echo "<option selected value=$weight[id]>$weight[name]</option>";
+                                    } else {
+                                        echo "<option value=$weight[id]>$weight[name]</option>";
+                                    }
                                 } else {
                                     echo "<option value=$weight[id]>$weight[name]</option>";
                                 }
+                                
                             }
                         ?>
                     </select>
