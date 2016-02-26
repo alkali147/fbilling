@@ -143,7 +143,7 @@ $recording_id = isset($_REQUEST['recording_id'])?$_REQUEST['recording_id']:'';
             </form>
         </td>
     </tr>
-<table>
+</table>
 
 <?php
 $allowed_categories = array("tenants","weights","permissions","prefixes","tariffs","trunks","recordings",'extensions');
